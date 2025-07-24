@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Cadastrar Animal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
@@ -12,7 +13,7 @@
 <div class="container py-5">
     <h1 class="mb-4 text-center">Cadastrar Animal</h1>
 
-     <div class="mb-4 text-start">
+    <div class="mb-4 text-start">
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar</a>
     </div>
 
@@ -24,7 +25,7 @@
     {% endif %}
     {% endwith %}
 
-    <form method="POST" class="row g-3">
+    <form method="POST" enctype="multipart/form-data" class="row g-3">
         <div class="col-md-6">
             <label for="nome" class="form-label">Nome:</label>
             <input type="text" class="form-control" name="nome" required>
@@ -71,6 +72,11 @@
             </select>
         </div>
 
+        <div class="col-md-6">
+            <label for="foto" class="form-label">Foto do Animal:</label>
+            <input type="file" class="form-control" name="foto" accept="image/*">
+        </div>
+
         <div class="col-12 d-grid">
             <button type="submit" class="btn btn-success">Cadastrar</button>
         </div>
@@ -81,24 +87,23 @@
     const racas_cachorro = ["SRD Porte Pequeno", "SRD Porte Medio", "SRD Porte Grande", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
     const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
 
-    function atualizarRacas() {
-        const especie = $('#especie').val();
-        let racas = [];
+   function atualizarRacas() {
+    const especie = $('#especie').val();
+    let racas = [];
 
-        if (especie === "Cachorro") {
-            racas = racas_cachorro;
-        } else if (especie === "Gato") {
-            racas = racas_gato;
-        }
-
-        const $raca = $('#raca');
-        $raca.empty().append('<option value="">Selecione</option>');
-        racas.forEach(raca => {
-            $raca.append(`<option value="${raca}">${raca}</option>`);
-        });
-        $raca.trigger('change');
+    if (especie === "Cachorro") {
+        racas = racas_cachorro;
+    } else if (especie === "Gato") {
+        racas = racas_gato;
     }
 
+    const $raca = $('#raca');
+    $raca.empty().append('<option value="">Selecione</option>');
+    racas.forEach(raca => {
+        $raca.append(`<option value="${raca}">${raca}</option>`);
+    });
+    $raca.trigger('change');
+}
     $(document).ready(function() {
         $('.select2').select2({
             placeholder: "Selecione",

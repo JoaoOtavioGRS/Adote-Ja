@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Perfil do Usuário</h2>
+    <p><strong>Nome:</strong> {{ usuario.nome }}</p>
+    <p><strong>Email:</strong> {{ usuario.email }}</p>
+    <p><strong>Telefone:</strong> {{ usuario.telefone }}</p>
+
+{% if usuario.foto and usuario.foto != 'None' and usuario.foto != '' %}
+  <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}" class="img-thumbnail rounded-circle" width="200" height="200" alt="Foto de Perfil">
+{% else %}
+  <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle img-thumbnail" style="width: 200px; height: 200px;">
+    <i class="fa-solid fa-user fa-3x"></i>
+  </div>
+{% endif %}
+
+    <a href="{{ url_for('editar_perfil') }}" class="btn btn-primary mt-3">Editar Perfil</a>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Voltar</a>
+</div>
+{% endblock %}
