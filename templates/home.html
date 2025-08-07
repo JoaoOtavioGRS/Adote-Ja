@@ -1,30 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Página Inicial - Adote Já{% endblock %}
+{% block title %}Home - Adote Já{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column justify-content-center align-items-center vh-100">
-    <h1 class="mb-4 text-center">🐾 Bem-vindo ao Adote Já!</h1>
+<div class="text-center mb-4">
+    <h3 class="mb-3">Olá, {{ session['usuario_nome'] }}!</h3>
+    <h2 class="mb-1">🐾 Bem-vindo ao Adote Já!</h2>
+    <p class="lead text-secondary">Encontre um amigo de 4 patas hoje mesmo.</p>
+</div>
 
-    <div class="text-center mb-4">
-        <p class="fs-5">Olá, {{ session['usuario_nome'] }}!</p>
+<div class="row justify-content-center g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <i class="fas fa-paw fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">Cadastrar Animal</h5>
+                <p class="card-text text-center">Tem um pet para adoção? Cadastre-o e o ajude a encontrar um novo lar.</p>
+                <a href="{{ url_for('cadastrar_ou_editar_animal') }}" class="btn btn-primary mt-auto">Cadastrar</a>
+            </div>
+        </div>
     </div>
-
-    <div class="row g-3 justify-content-center w-100" style="max-width: 500px;">
-        <div class="col-12">
-            <a href="{{ url_for('cadastrar_animal') }}" class="btn btn-success w-100 btn-lg">
-                <i class="bi bi-plus-circle"></i> Cadastrar Animal para Adoção
-            </a>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <i class="fas fa-list fa-3x mb-3 text-success"></i>
+                <h5 class="card-title">Animais para Adoção</h5>
+                <p class="card-text text-center">Veja os pets disponíveis para adoção e escolha seu novo melhor amigo.</p>
+                <a href="{{ url_for('listar_animais') }}" class="btn btn-success mt-auto">Ver Animais</a>
+            </div>
         </div>
-        <div class="col-12">
-            <a href="{{ url_for('listar_animais') }}" class="btn btn-primary w-100 btn-lg">
-                <i class="bi bi-search-heart"></i> Ver Animais Disponíveis
-            </a>
-        </div>
-        <div class="col-12">
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100 btn-lg">
-                <i class="bi bi-box-arrow-right"></i> Sair
-            </a>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <i class="fas fa-user fa-3x mb-3 text-info"></i>
+                <h5 class="card-title">Meu Perfil</h5>
+                <p class="card-text text-center">Visualize e atualize seus dados pessoais.</p>
+                <a href="{{ url_for('editar_perfil') }}" class="btn btn-info mt-auto">Perfil</a>
+            </div>
         </div>
     </div>
 </div>

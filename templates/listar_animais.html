@@ -8,17 +8,11 @@
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar</a>
     </div>
 
-    <h1 class="mb-4 text-center">Animais Disponíveis para Adoção</h1>
+    <h1 class="mb-4 text-center">
+        Animais Disponíveis para Adoção 🐾
+    </h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    <form method="GET" class="row g-3 mb-4">
+    <form method="GET" class="row g-3 mb-4" id="formFiltros">
         <div class="col-md-3">
             <label class="form-label">Espécie:</label>
             <select class="form-select select2" name="especie" id="especie">
@@ -32,6 +26,7 @@
             <label class="form-label">Raça:</label>
             <select class="form-select select2" name="raca" id="raca">
                 <option value="">Todas</option>
+                <!-- Opções preenchidas pelo JS -->
             </select>
         </div>
 
@@ -48,8 +43,9 @@
             <label class="form-label">Vacinado:</label>
             <select class="form-select select2" name="vacinado">
                 <option value="">Todos</option>
-                <option value="Sim" {% if request.args.get('vacinado') == 'Sim' %}selected{% endif %}>Sim</option>
-                <option value="Não" {% if request.args.get('vacinado') == 'Não' %}selected{% endif %}>Não</option>
+                <option value="0" {% if request.args.get('vacinado') == '0' %}selected{% endif %}>Sim</option>
+                <option value="1" {% if request.args.get('vacinado') == '1' %}selected{% endif %}>Não</option>
+                <option value="2" {% if request.args.get('vacinado') == '2' %}selected{% endif %}>Não sei</option>
             </select>
         </div>
 
@@ -57,43 +53,92 @@
             <label class="form-label">Castrado:</label>
             <select class="form-select select2" name="castrado">
                 <option value="">Todos</option>
-                <option value="Sim" {% if request.args.get('castrado') == 'Sim' %}selected{% endif %}>Sim</option>
-                <option value="Não" {% if request.args.get('castrado') == 'Não' %}selected{% endif %}>Não</option>
+                <option value="0" {% if request.args.get('castrado') == '0' %}selected{% endif %}>Sim</option>
+                <option value="1" {% if request.args.get('castrado') == '1' %}selected{% endif %}>Não</option>
+                <option value="2" {% if request.args.get('castrado') == '2' %}selected{% endif %}>Não sei</option>
             </select>
         </div>
 
-        <div class="col-12 d-grid mt-3">
+        <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
+            <button type="button" id="btnLimparFiltros" class="btn btn-secondary">Limpar Filtros</button>
         </div>
     </form>
 
     {% if animais %}
-        {% for animal in animais %}
-            <div class="card mb-3">
-                <div class="row g-0">
-                    {% if animal.foto %}
-                    <div class="col-md-4">
-                       <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) }}" alt="Foto do animal" class="img-fluid rounded-start" alt="Foto de {{ animal.nome }}">
-                    </div>
-                    {% endif %}
-                    <div class="{% if animal.foto %}col-md-8{% else %}col-12{% endif %}">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ animal.nome }}</h5>
-                            <p class="card-text">
-                                <strong>Espécie:</strong> {{ animal.especie }}<br>
-                                <strong>Raça:</strong> {{ animal.raca }}<br>
-                                <strong>Sexo:</strong> {{ animal.sexo }}<br>
-                                <strong>Vacinado:</strong> {{ 'Sim' if animal.vacinado else 'Não' }}<br>
-                                <strong>Castrado:</strong> {{ 'Sim' if animal.castrado else 'Não' }}<br>
-                                <strong>Telefone para Contato:</strong> {{ animal.usuario.telefone or 'Não informado' }}
-                            </p>
+{% for animal in animais %}
+    <div class="card mb-3 shadow-sm">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
+                     alt="Foto do animal"
+                     class="rounded-start"
+                     style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+            </div>
 
+            <div class="col-md-8 px-4 py-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                                <h4 class="card-title mb-1">{{ animal.nome }}</h4>
+                                <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
+                            </div>
                             {% if session['usuario_id'] == animal.usuario_id %}
-                                <a href="{{ url_for('editar_animal', id=animal.id) }}" class="btn btn-primary btn-sm">Editar</a>
+                            <div>
+                                <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </form>
+                            </div>
                             {% endif %}
+                        </div>
+
+                        <hr class="my-2">
+
+                        <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
+                                {% if animal.vacinado == 0 %}
+                                    Sim
+                                {% elif animal.vacinado == 1 %}
+                                    Não
+                                {% else %}
+                                    Não sei
+                                {% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
+                                {% if animal.castrado == 0 %}
+                                    Sim
+                                {% elif animal.castrado == 1 %}
+                                    Não
+                                {% else %}
+                                    Não sei
+                                {% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-phone me-2 text-muted"></i>
+                                <strong>Contato:</strong>&nbsp;
+                                {% if animal.usuario.telefone %}
+                                    <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}" target="_blank" class="btn btn-success btn-sm">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </a>
+                                {% else %}
+                                    Não informado
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,8 +156,14 @@
 
 {% block scripts %}
 <script>
-    const racas_cachorro = ["SRD", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
-    const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
+    const racas_cachorro = [
+        "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande",
+        "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire",
+        "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"
+    ];
+    const racas_gato = [
+        "SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"
+    ];
 
     function atualizarRacas() {
         const especie = $('#especie').val();
@@ -130,9 +181,12 @@
             $raca.append(`<option value="${raca}">${raca}</option>`);
         });
 
+        // Mantém a raça selecionada após atualizar as opções
         const racaSelecionada = "{{ request.args.get('raca', '') }}";
         if (racaSelecionada) {
-            $raca.val(racaSelecionada).trigger('change');
+            $raca.val(racaSelecionada).trigger('change.select2');
+        } else {
+            $raca.trigger('change.select2');
         }
     }
 
@@ -143,7 +197,15 @@
         });
 
         $('#especie').on('change', atualizarRacas);
+
+        // Atualiza as raças já ao carregar a página (com seleção correta)
         atualizarRacas();
+
+        $('#btnLimparFiltros').click(function() {
+            $('.select2').val(null).trigger('change');
+            $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
+            $('#formFiltros').submit();
+        });
     });
 </script>
 {% endblock %}

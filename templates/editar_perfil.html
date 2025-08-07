@@ -23,9 +23,13 @@
             <label for="foto" class="form-label">Foto de Perfil:</label>
             <input type="file" class="form-control" id="foto" name="foto">
 {% if usuario.foto and usuario.foto != 'None' and usuario.foto != '' %}
-  <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}" class="img-thumbnail rounded-circle" width="200" height="200" alt="Foto de Perfil">
+  <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}"
+       class="img-thumbnail"
+       width="200" height="200"
+       alt="Foto de Perfil">
 {% else %}
-  <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle img-thumbnail" style="width: 200px; height: 200px;">
+  <div class="d-flex justify-content-center align-items-center bg-light text-secondary img-thumbnail"
+       style="width: 200px; height: 200px;">
     <i class="fa-solid fa-user fa-3x"></i>
   </div>
 {% endif %}
