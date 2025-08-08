@@ -246,6 +246,7 @@ def cadastrar_ou_editar_animal(id=None):
 
 """TESTE"""
 
+
 @app.route('/listar_animais')
 def listar_animais():
     if 'usuario_id' not in session:
