@@ -244,6 +244,8 @@ def cadastrar_ou_editar_animal(id=None):
     # GET
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
+"""TESTE"""
+
 @app.route('/listar_animais')
 def listar_animais():
     if 'usuario_id' not in session:
