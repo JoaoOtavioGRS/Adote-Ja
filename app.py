@@ -181,72 +181,6 @@ def editar_perfil():
 # Rota cadastrar animal com upload de foto
 from PIL import Image
 
-"""@app.route('/cadastrar_animal', methods=['GET', 'POST'])
-def cadastrar_animal():
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        nome = request.form['nome']
-        especie = request.form['especie']
-        raca = request.form.get('raca')
-        sexo = request.form.get('sexo')
-        # Correto para IntegerField com 0, 1, 2
-        vacinado = int(request.form.get("vacinado")) if request.form.get("vacinado") else 2
-        castrado = int(request.form.get("castrado")) if request.form.get("castrado") else 2
-
-        foto_file = request.files.get('foto')
-
-        foto_filename = None
-
-        if foto_file and foto_file.filename != '':
-            try:
-                imagem = Image.open(foto_file)
-
-                # Converter RGBA para RGB se necessário
-                if imagem.mode in ("RGBA", "P"):
-                    imagem = imagem.convert("RGB")
-
-                # Redimensionar
-                imagem = imagem.resize((400, 400), Image.Resampling.LANCZOS)
-
-                foto_filename = secure_filename(foto_file.filename)
-                caminho = os.path.join(app.config['UPLOAD_FOLDER_ANIMAL'], foto_filename)
-
-                # Detecta o formato real da imagem
-                extensao = foto_filename.rsplit('.', 1)[-1].lower()
-
-                # Salva com o formato correto
-                formato_pillow = EXTENSOES_PIL.get(extensao)
-                if not formato_pillow:
-                    flash('Formato de imagem não suportado.', 'danger')
-                    return redirect(request.url)
-                imagem.save(caminho, format=formato_pillow)
-
-            except UnidentifiedImageError:
-                flash('Formato de imagem não suportado ou arquivo inválido.', 'danger')
-                return redirect(request.url)
-
-            except OSError:
-                flash('Erro ao processar a imagem: formato não suportado.', 'danger')
-                return redirect(request.url)
-
-        novo_animal = Animal(
-            nome=request.form.get("nome"),
-            especie=request.form.get("especie"),
-            raca=request.form.get("raca"),
-            sexo=request.form.get("sexo"),
-            vacinado=int(request.form.get("vacinado")) if request.form.get("vacinado") else 2,
-            castrado=int(request.form.get("castrado")) if request.form.get("castrado") else 2,
-            usuario_id=session["usuario_id"]
-        )
-        db.session.add(novo_animal)
-        db.session.commit()
-        flash('Animal cadastrado com sucesso!', 'success')
-        return redirect(url_for('listar_animais'))
-
-    return render_template('cadastrar_editar_animal.html')
-"""
 
 @app.route('/animal', methods=['GET', 'POST'])
 @app.route('/animal/<int:id>', methods=['GET', 'POST'])
@@ -353,42 +287,6 @@ def listar_animais():
         animais=animais
     )
 
-'''@app.route('/editar_animal/<int:id>', methods=['GET', 'POST'])
-def editar_animal(id):
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
-
-    animal = Animal.query.get_or_404(id)
-    if animal.usuario_id != session['usuario_id']:
-        flash('Acesso negado.', 'danger')
-        return redirect(url_for('listar_animais'))
-
-    if request.method == 'POST':
-        animal.nome = request.form['nome']
-        animal.especie = request.form['especie']
-        animal.raca = request.form.get('raca')
-        animal.sexo = request.form.get('sexo')
-        # Vacinado
-        vacinado = int(request.form.get('vacinado')) if request.form.get('vacinado') else 2
-        castrado = int(request.form.get('castrado')) if request.form.get('castrado') else 2
-
-        animal.vacinado = vacinado
-        animal.castrado = castrado
-
-        animal.telefone_contato = request.form.get('telefone_contato')
-
-        foto_file = request.files.get('foto')
-        if foto_file and foto_file.filename != '':
-            foto_filename = secure_filename(foto_file.filename)
-            foto_file.save(os.path.join(app.config['UPLOAD_FOLDER_ANIMAL'], foto_filename))
-            animal.foto = foto_filename
-
-        db.session.commit()
-        flash('Animal atualizado com sucesso!', 'success')
-        return redirect(url_for('listar_animais'))
-
-    return render_template('editar_animal.html', animal=animal)
-'''
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):
     if 'usuario_id' not in session:
