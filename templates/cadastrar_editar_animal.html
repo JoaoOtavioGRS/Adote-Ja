@@ -5,12 +5,20 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h1 class="mb-4 text-center">{{ 'Editar Animal' if animal else 'Cadastrar Animal' }}</h1>
+        <div class="container py-5">
+            <h1 class="mb-4 text-center">{{ 'Editar Animal' if animal else 'Cadastrar Animal' }}</h1>
 
-    <div class="mb-4 text-start">
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar</a>
-    </div>
+        <div class="text-center mb-4">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-1 text-info">Obrigado por ajudar um pet a encontrar um lar ❤️ </h5>
+                    <p class="mb-0">
+                        Todos os anúncios são removidos automaticamente após <strong>30 dias</strong>.<br>
+                        Caso o pet seja adotado antes desse prazo, você pode <strong>excluir o anúncio manualmente</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
 
     <form method="POST" enctype="multipart/form-data" class="row g-3"
           action="{{ url_for('cadastrar_ou_editar_animal', id=animal.id if animal else None) }}">
@@ -83,7 +91,6 @@
 
 {% block scripts %}
 <script>
-
     const racas_cachorro = ["SRD Porte Pequeno", "SRD Porte Medio", "SRD Porte Grande", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
     const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
 
@@ -107,21 +114,21 @@
     }
 
     $(document).ready(function() {
-    $('.select2').select2({
-    placeholder: "Selecione",
-    allowClear: true,
-    language: {
-        noResults: function() {
-            return "Nenhum resultado encontrado";
-        },
-        searching: function() {
-            return "Buscando...";
-        },
-        inputTooShort: function() {
-            return "Digite mais caracteres";
-        }
-    }
-});
+        $('.select2').select2({
+            placeholder: "Selecione",
+            allowClear: true,
+            language: {
+                noResults: function() {
+                    return "Nenhum resultado encontrado";
+                },
+                searching: function() {
+                    return "Buscando...";
+                },
+                inputTooShort: function() {
+                    return "Digite mais caracteres";
+                }
+            }
+        });
         $('#especie').on('change', atualizarRacas);
         atualizarRacas();
     });

@@ -287,6 +287,18 @@ def listar_animais():
         animais=animais
     )
 
+
+@app.route('/meus_anuncios')
+def meus_anuncios():
+    if 'usuario_id' not in session:
+        flash('Faça login para acessar essa página.', 'danger')
+        return redirect(url_for('login'))
+
+    usuario_id = session['usuario_id']
+    anuncios = Animal.query.filter_by(usuario_id=usuario_id).all()
+
+    return render_template('meus_anuncios.html', anuncios=anuncios)
+
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):
     if 'usuario_id' not in session:

@@ -2,6 +2,10 @@
 {% block title %}Cadastrar Usuário - Adote Já{% endblock %}
 
 {% block content %}
+        <div class="mb-4 text-start">
+                <a href="{{ url_for('login') }}" class="btn btn-secondary"><i class="fa-solid fa-house"></i> Início</a>
+        </div>
+
 <h1 class="mb-4 text-center">Cadastrar Usuário</h1>
 
 <form method="POST" enctype="multipart/form-data" class="mx-auto" style="max-width: 400px;">

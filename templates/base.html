@@ -35,26 +35,45 @@
   <div class="container">
     <a class="navbar-brand" href="{{ url_for('home') }}">Adote Já 🐾</a>
 
-    <div class="d-flex align-items-center ms-auto">
-      {% if session.get('usuario_id') %}
-        <div class="dropdown">
-          <a href="#" class="btn btn-outline-primary d-flex align-items-center" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {% if session.get('usuario_foto') %}
-              <img src="{{ url_for('static', filename='uploads/usuarios/' + session['usuario_foto']) }}" alt="Foto Usuário" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
-            {% else %}
-              <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
-            {% endif %}
-            {{ session['usuario_nome'] }}
+     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+ <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <!-- Logo ou nome do site -->
+
+    <!-- Botão toggle para mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+      {% if 'usuario_id' in session and request.endpoint != 'login' %}
+    <!-- Menu -->
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav ms-auto">
+        <!-- Dropdown com ícone hambúrguer -->
+        <li class="nav-item dropdown">
+          <a class="nav-link" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Editar Perfil</a></li>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+              <li><a class="dropdown-item" href="{{ url_for('home') }}">Início</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('cadastrar_ou_editar_animal') }}">Cadastrar Animal</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('listar_animais') }}">Listar Animais</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('meus_anuncios') }}">Meus Anúncios</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sair</a></li>
           </ul>
-        </div>
-      {% else %}
-        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
-      {% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+    {% endif %}
+
+
     </div>
   </div>
 </nav>
@@ -93,3 +112,4 @@
 
 </body>
 </html>
+

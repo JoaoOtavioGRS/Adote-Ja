@@ -4,10 +4,6 @@
 
 {% block content %}
 <div>
-    <div class="text-start mb-3">
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar</a>
-    </div>
-
     <h1 class="mb-4 text-center">
         Animais Disponíveis para Adoção 🐾
     </h1>
@@ -148,9 +144,17 @@
         <p class="text-center">Nenhum animal encontrado.</p>
     {% endif %}
 
-    <div class="text-center mt-4">
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar para Home</a>
-    </div>
+<div class="text-end mt-4">
+    <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
+</div>
+<script>
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // Rolagem suave
+    });
+}
+</script>
 </div>
 {% endblock %}
 

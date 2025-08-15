@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Meus Anúncios{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Meus Anúncios</h2>
+
+    {% if anuncios %}
+        {% for animal in anuncios %}
+            <div class="card mb-3 shadow-sm">
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                        <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
+                             alt="Foto do animal"
+                             class="rounded-start"
+                             style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+                    </div>
+
+                    <div class="col-md-8 px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h4 class="card-title mb-1">{{ animal.nome }}</h4>
+                                <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('listar_animais', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
+                                {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
+                                {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-phone me-2 text-muted"></i><strong>Contato:</strong>&nbsp;Você mesmo
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            Você ainda não possui anúncios cadastrados.
+        </div>
+    {% endif %}
+</div>
+
+<div class="text-end mt-4">
+    <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
+</div>
+<script>
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // Rolagem suave
+    });
+}
+</script>
+</div>
+
+{% endblock %}
