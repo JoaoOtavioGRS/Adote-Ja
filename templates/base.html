@@ -31,48 +31,42 @@
   {% endif %}
 {% endwith %}
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
   <div class="container">
-    <a class="navbar-brand" href="{{ url_for('home') }}">Adote Já 🐾</a>
-
-     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Adote Já 🐾</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Alternar navegação">
       <span class="navbar-toggler-icon"></span>
     </button>
 
- <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <!-- Logo ou nome do site -->
-
-    <!-- Botão toggle para mobile -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-      {% if 'usuario_id' in session and request.endpoint != 'login' %}
-    <!-- Menu -->
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav ms-auto">
-        <!-- Dropdown com ícone hambúrguer -->
-        <li class="nav-item dropdown">
-          <a class="nav-link" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="navbar-toggler-icon"></span>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Início</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('editar_perfil') }}">Perfil</a>
+        </li>
+      </ul>
+         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        {% if session.get('usuario_foto') %}
+          <li class="nav-item me-2">
+            <img src="{{ url_for('static', filename='uploads/usuarios/' + session['usuario_foto']) }}"
+                 alt="Foto do usuário"
+                 class="rounded-circle"
+                 style="width: 35px; height: 35px; object-fit: cover; border: 1px solid #fff;">
+          </li>
+        {% endif %}
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('logout') }}">
+            <i class="fas fa-user"></i> Sair
           </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-              <li><a class="dropdown-item" href="{{ url_for('home') }}">Início</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Perfil</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('cadastrar_ou_editar_animal') }}">Cadastrar Animal</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('listar_animais') }}">Listar Animais</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('meus_anuncios') }}">Meus Anúncios</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sair</a></li>
-          </ul>
         </li>
       </ul>
     </div>
   </div>
 </nav>
-    {% endif %}
-
 
     </div>
   </div>
