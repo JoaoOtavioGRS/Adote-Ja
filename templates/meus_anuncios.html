@@ -23,16 +23,17 @@
                                 <h4 class="card-title mb-1">{{ animal.nome }}</h4>
                                 <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
                             </div>
-                            <div>
-                                <a href="{{ url_for('listar_animais', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </div>
+                       <div>
+                        <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                            <input type="hidden" name="next" value="{{ url_for('meus_anuncios') }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
                         </div>
 
                         <hr class="my-2">

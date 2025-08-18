@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-import os
 import re
 from PIL import Image, UnidentifiedImageError
 from datetime import datetime, timedelta
+import os, json
 
 EXTENSOES_PIL = {
     'jpg': 'JPEG',
@@ -20,6 +20,9 @@ EXTENSOES_PIL = {
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
+# Caminho para a pasta data
+DATA_DIR = os.path.abspath(os.path.join(app.root_path, 'data'))
+CIDADES_DIR = os.path.join(DATA_DIR, 'cidades')
 
 # Configurações do banco de dados
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/adote_ja'
@@ -69,6 +72,14 @@ def excluir_animais_vencidos():
         db.session.delete(animal)
 
     db.session.commit()
+
+# Função para carregar cidades de um estado específico
+def carregar_cidades(estado_sigla):
+    caminho = os.path.join(DATA_DIR, f'{estado_sigla}.json')
+    if os.path.exists(caminho):
+        with open(caminho, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
 
 # ROTAS
 
@@ -123,6 +134,9 @@ def login():
         if usuario and check_password_hash(usuario.senha, senha):
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
+            # 🔥 Adiciona a foto do usuário na sessão
+            session['usuario_foto'] = usuario.foto if usuario.foto else None
+
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home'))
         else:
@@ -152,6 +166,8 @@ from PIL import Image
 from werkzeug.utils import secure_filename
 import os
 
+import json
+
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 def editar_perfil():
     if 'usuario_id' not in session:
@@ -159,28 +175,54 @@ def editar_perfil():
 
     usuario = Usuario.query.get(session['usuario_id'])
 
+    # Carregar estados JSON
+    with open(os.path.join(DATA_DIR, 'estados.json'), 'r', encoding='utf-8') as f:
+        estados = json.load(f)['estados']  # ['estados'] pois seu JSON tem esse formato
+
+    # Carregar cidades de todos os arquivos JSON
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    cidades_por_estado = {}
+    for arquivo in os.listdir(cidades_dir):
+        if arquivo.endswith('.json'):
+            caminho = os.path.join(cidades_dir, arquivo)
+            with open(caminho, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for item in data['cidades']:
+                    sigla = item['id']
+                    nome_cidade = item['cidade']
+                    if sigla not in cidades_por_estado:
+                        cidades_por_estado[sigla] = []
+                    cidades_por_estado[sigla].append(nome_cidade)
+
     if request.method == 'POST':
         usuario.nome = request.form['nome']
         usuario.email = request.form['email']
         usuario.telefone = request.form.get('telefone')
+        usuario.estado = request.form.get('estado')
+        usuario.cidade = request.form.get('cidade')
+
         foto = request.files.get('foto')
         if foto and foto.filename:
             nome_foto = secure_filename(foto.filename)
             caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
             foto.save(caminho_foto)
             usuario.foto = nome_foto
-        # Se não enviar nova foto, mantém a foto atual (não altera usuario.foto)
 
         db.session.commit()
+        session['usuario_nome'] = usuario.nome
+        session['usuario_foto'] = usuario.foto if usuario.foto else None
         flash('Perfil atualizado com sucesso!', 'success')
         return redirect(url_for('editar_perfil'))
 
-    return render_template('editar_perfil.html', usuario=usuario)
-
+    return render_template(
+        'editar_perfil.html',
+        usuario=usuario,
+        estados=estados,
+        cidades_por_estado=cidades_por_estado
+    )
 
 # Rota cadastrar animal com upload de foto
 from PIL import Image
-
 
 @app.route('/animal', methods=['GET', 'POST'])
 @app.route('/animal/<int:id>', methods=['GET', 'POST'])
@@ -295,24 +337,26 @@ def meus_anuncios():
         return redirect(url_for('login'))
 
     usuario_id = session['usuario_id']
-    anuncios = Animal.query.filter_by(usuario_id=usuario_id).all()
+    anuncios = Animal.query.filter_by(usuario_id=usuario_id).order_by(Animal.criado_em.desc()).all()
 
     return render_template('meus_anuncios.html', anuncios=anuncios)
 
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
-
     animal = Animal.query.get_or_404(id)
+
+    # Só permite excluir se o dono for o usuário logado
     if animal.usuario_id != session['usuario_id']:
-        flash('Acesso negado.', 'danger')
-        return redirect(url_for('listar_animais'))
+        flash('Você não tem permissão para excluir este animal.', 'danger')
+        return redirect(url_for('meus_anuncios'))
 
     db.session.delete(animal)
     db.session.commit()
     flash('Animal excluído com sucesso!', 'success')
-    return redirect(url_for('listar_animais'))
+
+    # Redireciona para a tela que enviou o formulário (padrão: meus_anuncios)
+    next_url = request.form.get('next')
+    return redirect(next_url or url_for('meus_anuncios'))
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -39,36 +39,36 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
+{% if request.endpoint not in ['login', 'cadastrar'] %}
     <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <ul class="navbar-nav ma-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Início</a>
+          <a class="nav-link" href="{{ url_for('home') }}"><i class="fa-solid fa-house"></i> Início</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('editar_perfil') }}">Perfil</a>
+           <li class="nav-item">
+            <li class="nav-item">
+          <a class="nav-link d-flex align-items-center" href="{{ url_for('perfil') }}">
+            {% if session.get('usuario_foto') %}
+              <img src="{{ url_for('static', filename='fotos_perfil/' + session['usuario_foto']) }}"
+                   alt="Foto do usuário"
+                   class="rounded-circle me-2"
+                   style="width:28px; height:28px; object-fit:cover; border:1px solid #fff;">
+            {% else %}
+              <i class="fa-solid fa-user-circle fa-lg me-2"></i>
+            {% endif %}
+            Perfil
+          </a>
         </li>
+
       </ul>
-         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-        {% if session.get('usuario_foto') %}
-          <li class="nav-item me-2">
-            <img src="{{ url_for('static', filename='uploads/usuarios/' + session['usuario_foto']) }}"
-                 alt="Foto do usuário"
-                 class="rounded-circle"
-                 style="width: 35px; height: 35px; object-fit: cover; border: 1px solid #fff;">
-          </li>
-        {% endif %}
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item">
           <a class="nav-link" href="{{ url_for('logout') }}">
-            <i class="fas fa-user"></i> Sair
+            <i class="fas fa-sign-out-alt"></i> Sair
           </a>
         </li>
       </ul>
     </div>
-  </div>
-</nav>
-
-    </div>
+        {% endif %}
   </div>
 </nav>
 
@@ -77,7 +77,10 @@
 </div>
 
 <footer class="bg-white text-center py-3 mt-auto shadow-sm">
-  <small>Adote Já &copy; 2025</small>
+  <small>Adote Já © 2025
+Projeto acadêmico - UNIFIL TADS
+Desenvolvido por João Otávio Gasparini
+</small>
 </footer>
 
 <!-- Bootstrap JS Bundle -->
