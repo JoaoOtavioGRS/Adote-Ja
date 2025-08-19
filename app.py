@@ -314,53 +314,6 @@ def cadastrar_ou_editar_animal(id=None):
     # GET
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
-''''# Nova rota para seleção de localização
-@app.route('/selecionar_localizacao', methods=['GET', 'POST'])
-def selecionar_localizacao():
-    if 'usuario_id' not in session:
-        return redirect(url_for('login'))
-
-    # Carregar estados
-    estados_path = os.path.join(DATA_DIR, 'estados.json')
-    with open(estados_path, 'r', encoding='utf-8') as f:
-        estados = json.load(f)['estados']
-
-    # Carregar cidades de todos os arquivos
-    cidades_dir = os.path.join(DATA_DIR, 'cidades')
-    cidades_por_estado = {}
-    if os.path.isdir(cidades_dir):
-        for arquivo in os.listdir(cidades_dir):
-            if arquivo.endswith('.json'):
-                caminho = os.path.join(cidades_dir, arquivo)
-                with open(caminho, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    for item in data.get('cidades', []):
-                        uf = item.get('id')
-                        nome = item.get('cidade')
-                        if uf and nome:
-                            cidades_por_estado.setdefault(uf, []).append(nome)
-    # Ordenar
-    for uf in cidades_por_estado:
-        cidades_por_estado[uf].sort(key=lambda s: s.lower())
-    estados.sort(key=lambda e: e['estado'].lower())
-
-    if request.method == 'POST':
-        estado = request.form.get('estado')
-        cidade = request.form.get('cidade')
-
-        # Salvar na sessão para filtrar depois
-        session['estado'] = estado
-        session['cidade'] = cidade
-
-        return redirect(url_for('listar_animais'))
-
-    return render_template(
-        'selecionar_localizacao.html',
-        estados=estados,
-        cidades_por_estado=cidades_por_estado
-    )
-'''
-
 # Ajuste da rota listar_animais para aceitar estado/cidade
 @app.route('/listar_animais')
 def listar_animais():
