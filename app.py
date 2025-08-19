@@ -472,7 +472,6 @@ def meus_anuncios():
         meus_anuncios=True  # Para, se quiser, customizar algo no template
     )
 
-
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):
     animal = Animal.query.get_or_404(id)
