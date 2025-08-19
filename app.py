@@ -99,34 +99,82 @@ def formatar_telefone_whatsapp(telefone):
     return numeros
 
 # Rota para cadastro de usuário, com foto opcional
+from werkzeug.security import generate_password_hash
+
 @app.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar():
     if request.method == 'POST':
-        nome = request.form['nome']
-        email = request.form['email']
+        nome = request.form.get('nome')
+        email = request.form.get('email')
         telefone = request.form.get('telefone')
-        senha = request.form['senha']
-        foto_file = request.files.get('foto')
+        senha = request.form.get('senha')
+        confirmar_senha = request.form.get('confirmar_senha')
+        estado = request.form.get('estado')
+        cidade = request.form.get('cidade')
 
-        if Usuario.query.filter_by(email=email).first():
-            flash('E-mail já cadastrado.', 'danger')
+        if senha != confirmar_senha:
+            flash('As senhas não coincidem.', 'danger')
             return redirect(url_for('cadastrar'))
 
-        foto_filename = None
-        if foto_file and foto_file.filename != '':
-            foto_filename = secure_filename(foto_file.filename)
-            foto_file.save(os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], foto_filename))
+        if Usuario.query.filter_by(email=email).first():
+            flash('Este email já está cadastrado.', 'danger')
+            return redirect(url_for('cadastrar'))
 
-        senha_hash = generate_password_hash(senha)
+        # Criptografar senha
+        senha_criptografada = generate_password_hash(senha)
 
-        novo_usuario = Usuario(nome=nome, email=email, telefone=telefone, senha=senha_hash, foto=foto_filename)
-        db.session.add(novo_usuario)
+        # Foto (opcional)
+        foto = request.files.get('foto')
+        nome_foto = None
+        if foto and foto.filename:
+            nome_foto = secure_filename(foto.filename)
+            caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
+            foto.save(caminho_foto)
+
+        # Criar usuário e salvar no banco
+        usuario = Usuario(
+            nome=nome,
+            email=email,
+            telefone=telefone,
+            senha=senha_criptografada,
+            estado=estado,
+            cidade=cidade,
+            foto=nome_foto
+        )
+        db.session.add(usuario)
         db.session.commit()
 
-        flash('Cadastro realizado com sucesso! Faça login.', 'success')
+        flash('Usuário cadastrado com sucesso!', 'success')
         return redirect(url_for('login'))
 
-    return render_template('cadastrar.html')
+    # ====== GET ====== Carregar ESTADOS e CIDADES ======
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados_lista = json.load(f)['estados']
+
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    cidades_por_estado = {}
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados_lista.sort(key=lambda e: e['estado'].lower())
+
+    return render_template(
+        'cadastrar.html',
+        estados=estados_lista,
+        cidades_por_estado=cidades_por_estado
+    )
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -377,6 +425,10 @@ def listar_animais():
     return render_template('listar_animais.html', animais=animais, meus_anuncios=False,
                            pagina_atual='listar_animais', estados=estados_lista, cidades_por_estado=cidades_por_estado)
 
+@app.route('/perfil_doador/<int:usuario_id>')
+def perfil_doador(usuario_id):
+    usuario = Usuario.query.get_or_404(usuario_id)
+    return render_template('perfil_doador.html', usuario=usuario)
 
 @app.route('/meus_anuncios')
 def meus_anuncios():

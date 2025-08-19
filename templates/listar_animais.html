@@ -92,24 +92,38 @@
                              style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
                     </div>
                     <div class="col-md-8 px-4 py-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h4 class="card-title mb-1">{{ animal.nome }}</h4>
-                                <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
-                            </div>
-                            {% if session['usuario_id'] == animal.usuario_id %}
-                            <div>
-                                <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </div>
-                            {% endif %}
-                        </div>
+             <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h4 class="card-title mb-1">{{ animal.nome }}</h4>
+                        <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
+                      </div>
+                      <div class="d-flex">
+                        {% if session['usuario_id'] == animal.usuario.id %}
+                          <!-- Botão doador (quando é o próprio dono, vai para a esquerda) -->
+                          <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}"
+                             class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
+                            <i class="fas fa-user"></i>
+                          </a>
+
+                          <!-- Botões editar/excluir -->
+                          <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}"
+                             class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          </form>
+                        {% else %}
+                          <!-- Botão doador (quando NÃO é o dono, fica sozinho à direita) -->
+                          <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}"
+                             class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
+                            <i class="fas fa-user"></i>
+                          </a>
+                        {% endif %}
+                      </div>
+</div>
 
                         <hr class="my-2">
 
