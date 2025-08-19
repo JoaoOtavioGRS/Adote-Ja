@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Listar Animais - Adote-Já{% endblock %}
+{% block title %}{{ 'Meus Anúncios 🐾' if meus_anuncios else 'Animais Disponíveis para Adoção 🐾' }}{% endblock %}
 
 {% block content %}
 <div>
     <h1 class="mb-4 text-center">
-        Animais Disponíveis para Adoção 🐾
+        {{ 'Meus Anúncios 🐾' if meus_anuncios else 'Animais Disponíveis para Adoção 🐾' }}
     </h1>
 
+    {% if not meus_anuncios %}
     <form method="GET" class="row g-3 mb-4" id="formFiltros">
         <div class="col-md-3">
             <label class="form-label">Espécie:</label>
@@ -22,7 +23,6 @@
             <label class="form-label">Raça:</label>
             <select class="form-select select2" name="raca" id="raca">
                 <option value="">Todas</option>
-                <!-- Opções preenchidas pelo JS -->
             </select>
         </div>
 
@@ -55,26 +55,45 @@
             </select>
         </div>
 
+        {% if not meus_anuncios %}
+        <div class="col-md-2">
+            <label class="form-label">Estado:</label>
+            <select class="form-select select2" id="estado" name="estado">
+                <option value="">Indiferente</option>
+                {% for e in estados %}
+                    <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Cidade:</label>
+            <select class="form-select select2" id="cidade" name="cidade">
+                <option value="">Indiferente</option>
+            </select>
+        </div>
+        {% endif %}
+
         <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
             <button type="button" id="btnLimparFiltros" class="btn btn-secondary">Limpar Filtros</button>
         </div>
     </form>
+    {% endif %}
 
     {% if animais %}
-{% for animal in animais %}
-    <div class="card mb-3 shadow-sm">
-        <div class="row g-0 align-items-center">
-            <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
-                <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
-                     alt="Foto do animal"
-                     class="rounded-start"
-                     style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
-            </div>
-
-            <div class="col-md-8 px-4 py-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
+        {% for animal in animais %}
+            <div class="card mb-3 shadow-sm">
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                        <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
+                             alt="Foto do animal"
+                             class="rounded-start"
+                             style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+                    </div>
+                    <div class="col-md-8 px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
                                 <h4 class="card-title mb-1">{{ animal.nome }}</h4>
                                 <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
                             </div>
@@ -106,23 +125,14 @@
                             </div>
                             <div class="col d-flex align-items-center">
                                 <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
-                                {% if animal.vacinado == 0 %}
-                                    Sim
-                                {% elif animal.vacinado == 1 %}
-                                    Não
-                                {% else %}
-                                    Não sei
-                                {% endif %}
+                                {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
                             </div>
                             <div class="col d-flex align-items-center">
                                 <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
-                                {% if animal.castrado == 0 %}
-                                    Sim
-                                {% elif animal.castrado == 1 %}
-                                    Não
-                                {% else %}
-                                    Não sei
-                                {% endif %}
+                                {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-map-marker-alt me-2 text-danger"></i><strong>Local:</strong>&nbsp;{{ animal.cidade or 'Não informado' }} - {{ animal.estado or '' }}
                             </div>
                             <div class="col d-flex align-items-center">
                                 <i class="fas fa-phone me-2 text-muted"></i>
@@ -144,17 +154,9 @@
         <p class="text-center">Nenhum animal encontrado.</p>
     {% endif %}
 
-<div class="text-end mt-4">
-    <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
-</div>
-<script>
-function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // Rolagem suave
-    });
-}
-</script>
+    <div class="text-end mt-4">
+        <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
+    </div>
 </div>
 {% endblock %}
 
@@ -165,45 +167,49 @@ function scrollToTop() {
         "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire",
         "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"
     ];
-    const racas_gato = [
-        "SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"
-    ];
+    const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
+
+    const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+    const filtroCidade = "{{ request.args.get('cidade','') }}";
 
     function atualizarRacas() {
         const especie = $('#especie').val();
         let racas = [];
-
-        if (especie === "Cachorro") {
-            racas = racas_cachorro;
-        } else if (especie === "Gato") {
-            racas = racas_gato;
-        }
+        if (especie === "Cachorro") racas = racas_cachorro;
+        else if (especie === "Gato") racas = racas_gato;
 
         const $raca = $('#raca');
         $raca.empty().append('<option value="">Todas</option>');
-        racas.forEach(raca => {
-            $raca.append(`<option value="${raca}">${raca}</option>`);
-        });
+        racas.forEach(raca => $raca.append(`<option value="${raca}">${raca}</option>`));
 
-        // Mantém a raça selecionada após atualizar as opções
         const racaSelecionada = "{{ request.args.get('raca', '') }}";
-        if (racaSelecionada) {
-            $raca.val(racaSelecionada).trigger('change.select2');
-        } else {
-            $raca.trigger('change.select2');
+        if (racaSelecionada) $raca.val(racaSelecionada).trigger('change.select2');
+        else $raca.trigger('change.select2');
+    }
+
+    function atualizarCidades() {
+        const estado = $('#estado').val();
+        const $cidade = $('#cidade');
+        $cidade.empty().append('<option value="">Indiferente</option>');
+
+        if (estado && cidadesPorEstado[estado]) {
+            cidadesPorEstado[estado].forEach(c => {
+                const option = $('<option>').val(c).text(c);
+                if (c === filtroCidade) option.prop('selected', true);
+                $cidade.append(option);
+            });
         }
+        $cidade.trigger('change.select2');
     }
 
     $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "Selecione",
-            allowClear: true
-        });
+        $('.select2').select2({ placeholder: "Selecione", allowClear: true });
 
         $('#especie').on('change', atualizarRacas);
+        $('#estado').on('change', atualizarCidades);
 
-        // Atualiza as raças já ao carregar a página (com seleção correta)
         atualizarRacas();
+        atualizarCidades();
 
         $('#btnLimparFiltros').click(function() {
             $('.select2').val(null).trigger('change');
@@ -211,5 +217,9 @@ function scrollToTop() {
             $('#formFiltros').submit();
         });
     });
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 </script>
 {% endblock %}

@@ -53,15 +53,16 @@ class Usuario(db.Model):
 class Animal(db.Model):
     __tablename__ = 'animais'
     id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # Chave estrangeira
     nome = db.Column(db.String(100), nullable=False)
     especie = db.Column(db.String(50), nullable=False)
-    raca = db.Column(db.String(100))
+    raca = db.Column(db.String(50))
     sexo = db.Column(db.String(10))
-    vacinado = db.Column(db.Integer, default=2)  # 0 = Sim, 1 = Não, 2 = Não sei
-    castrado = db.Column(db.Integer, default=2)  # 0 = Sim, 1 = Não, 2 = Não sei
-    telefone_contato = db.Column(db.String(20))
-    foto = db.Column(db.String(200))  # caminho foto animal
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    vacinado = db.Column(db.Integer, default=2)
+    castrado = db.Column(db.Integer, default=2)
+    foto = db.Column(db.String(200))
+    estado = db.Column(db.String(50))   # Herdado do usuário
+    cidade = db.Column(db.String(50))   # Herdado do usuário
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
 def excluir_animais_vencidos():
@@ -277,6 +278,13 @@ def cadastrar_ou_editar_animal(id=None):
         animal.vacinado = vacinado
         animal.castrado = castrado
 
+        # ===== Vincular cidade e estado do usuário =====
+        usuario = Usuario.query.get(session["usuario_id"])
+        if usuario:
+            animal.estado = usuario.estado
+            animal.cidade = usuario.cidade
+
+        # ===== Upload e processamento da foto =====
         if foto_file and foto_file.filename != '':
             try:
                 imagem = Image.open(foto_file)
@@ -306,12 +314,60 @@ def cadastrar_ou_editar_animal(id=None):
     # GET
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
+''''# Nova rota para seleção de localização
+@app.route('/selecionar_localizacao', methods=['GET', 'POST'])
+def selecionar_localizacao():
+    if 'usuario_id' not in session:
+        return redirect(url_for('login'))
+
+    # Carregar estados
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados = json.load(f)['estados']
+
+    # Carregar cidades de todos os arquivos
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    cidades_por_estado = {}
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+    # Ordenar
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados.sort(key=lambda e: e['estado'].lower())
+
+    if request.method == 'POST':
+        estado = request.form.get('estado')
+        cidade = request.form.get('cidade')
+
+        # Salvar na sessão para filtrar depois
+        session['estado'] = estado
+        session['cidade'] = cidade
+
+        return redirect(url_for('listar_animais'))
+
+    return render_template(
+        'selecionar_localizacao.html',
+        estados=estados,
+        cidades_por_estado=cidades_por_estado
+    )
+'''
+
+# Ajuste da rota listar_animais para aceitar estado/cidade
 @app.route('/listar_animais')
 def listar_animais():
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
 
-    # Exclui anúncios antigos antes de exibir a lista
+    # Exclui anúncios antigos
     excluir_animais_vencidos()
 
     # Pegando filtros enviados pela URL (GET)
@@ -320,46 +376,97 @@ def listar_animais():
     sexo = request.args.get('sexo')
     vacinado_value = request.args.get('vacinado')
     castrado_value = request.args.get('castrado')
+    estado = request.args.get('estado')
+    cidade = request.args.get('cidade')
 
-    query = Animal.query
+    # Faz join com Usuario para pegar cidade e estado
+    query = Animal.query.join(Usuario)
 
-    # Filtro espécie
     if especie and especie.strip():
         query = query.filter(Animal.especie == especie)
-
-    # Filtro raça
     if raca and raca.strip():
         query = query.filter(Animal.raca == raca)
-
-    # Filtro sexo
     if sexo and sexo.strip():
         query = query.filter(Animal.sexo == sexo)
-
     if vacinado_value in ('0', '1', '2'):
         query = query.filter(Animal.vacinado == int(vacinado_value))
-
     if castrado_value in ('0', '1', '2'):
         query = query.filter(Animal.castrado == int(castrado_value))
+    if estado and estado != "Indiferente":
+        query = query.filter(Usuario.estado == estado)
+    if cidade and cidade != "Indiferente":
+        query = query.filter(Usuario.cidade == cidade)
 
-    # Ordenação: mais recentes primeiro
     animais = query.order_by(Animal.criado_em.desc()).all()
 
-    return render_template(
-        'listar_animais.html',
-        animais=animais
-    )
+    # ===== Carregar estados e cidades dos JSON =====
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados_lista = json.load(f)['estados']
+
+    cidades_por_estado = {}
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados_lista.sort(key=lambda e: e['estado'].lower())
+
+    return render_template('listar_animais.html', animais=animais, meus_anuncios=False,
+                           pagina_atual='listar_animais', estados=estados_lista, cidades_por_estado=cidades_por_estado)
 
 
 @app.route('/meus_anuncios')
 def meus_anuncios():
     if 'usuario_id' not in session:
-        flash('Faça login para acessar essa página.', 'danger')
         return redirect(url_for('login'))
 
     usuario_id = session['usuario_id']
-    anuncios = Animal.query.filter_by(usuario_id=usuario_id).order_by(Animal.criado_em.desc()).all()
 
-    return render_template('meus_anuncios.html', anuncios=anuncios)
+    # Pega apenas os animais do usuário logado
+    animais = Animal.query.filter_by(usuario_id=usuario_id).order_by(Animal.criado_em.desc()).all()
+
+    # ===== Carregar estados e cidades dos JSON =====
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados_lista = json.load(f)['estados']
+
+    cidades_por_estado = {}
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados_lista.sort(key=lambda e: e['estado'].lower())
+
+    return render_template(
+        'listar_animais.html',  # Podemos reutilizar o mesmo template
+        animais=animais,
+        estados=estados_lista,
+        cidades_por_estado=cidades_por_estado,
+        filtro_estado="Indiferente",
+        filtro_cidade="Indiferente",
+        meus_anuncios=True  # Para, se quiser, customizar algo no template
+    )
+
 
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):

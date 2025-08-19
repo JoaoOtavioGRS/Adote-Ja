@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Selecionar Localização{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Selecione o Estado e a Cidade</h2>
+
+    <form method="POST" action="{{ url_for('selecionar_localizacao') }}">
+        <!-- Estado -->
+        <div class="mb-3">
+            <label for="estado" class="form-label">Estado:</label>
+            <select class="form-select" id="estado" name="estado" required>
+                <option value="">Selecione um estado</option>
+                {% for e in estados %}
+                    <option value="{{ e.id }}">{{ e.estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Cidade -->
+        <div class="mb-3">
+            <label for="cidade" class="form-label">Cidade:</label>
+            <select class="form-select" id="cidade" name="cidade" required>
+                <option value="">Selecione uma cidade</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Ver Animais</button>
+    </form>
+</div>
+
+<script>
+    const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+    const estadoSelect = document.getElementById('estado');
+    const cidadeSelect = document.getElementById('cidade');
+
+    function atualizarCidades() {
+        const sigla = estadoSelect.value;
+        cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+        if (sigla && cidadesPorEstado[sigla]) {
+            cidadesPorEstado[sigla].forEach(cidade => {
+                const option = document.createElement('option');
+                option.value = cidade;
+                option.text = cidade;
+                cidadeSelect.appendChild(option);
+            });
+        }
+    }
+
+    estadoSelect.addEventListener('change', atualizarCidades);
+    window.addEventListener('DOMContentLoaded', atualizarCidades);
+</script>
+{% endblock %}
