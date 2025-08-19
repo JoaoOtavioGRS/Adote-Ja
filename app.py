@@ -47,6 +47,8 @@ class Usuario(db.Model):
     senha = db.Column(db.String(200), nullable=False)
     foto = db.Column(db.String(200))  # caminho foto opcional
     animais = db.relationship('Animal', backref='usuario', lazy=True)
+    estado = db.Column(db.String(2))
+    cidade = db.Column(db.String(100))
 
 class Animal(db.Model):
     __tablename__ = 'animais'
@@ -175,32 +177,43 @@ def editar_perfil():
 
     usuario = Usuario.query.get(session['usuario_id'])
 
-    # Carregar estados JSON
-    with open(os.path.join(DATA_DIR, 'estados.json'), 'r', encoding='utf-8') as f:
-        estados = json.load(f)['estados']  # ['estados'] pois seu JSON tem esse formato
+    # ====== Carregar ESTADOS ======
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados_lista = json.load(f)['estados']  # lista de {id, estado}
 
-    # Carregar cidades de todos os arquivos JSON
+    # ====== Carregar CIDADES (mapa UF -> [nomes]) ======
     cidades_dir = os.path.join(DATA_DIR, 'cidades')
     cidades_por_estado = {}
-    for arquivo in os.listdir(cidades_dir):
-        if arquivo.endswith('.json'):
-            caminho = os.path.join(cidades_dir, arquivo)
-            with open(caminho, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                for item in data['cidades']:
-                    sigla = item['id']
-                    nome_cidade = item['cidade']
-                    if sigla not in cidades_por_estado:
-                        cidades_por_estado[sigla] = []
-                    cidades_por_estado[sigla].append(nome_cidade)
+
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    # data['cidades'] é lista de { id: "UF", cidade: "Nome", ... }
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+
+    # Ordenar para ficar bonito
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados_lista.sort(key=lambda e: e['estado'].lower())
 
     if request.method == 'POST':
         usuario.nome = request.form['nome']
         usuario.email = request.form['email']
         usuario.telefone = request.form.get('telefone')
-        usuario.estado = request.form.get('estado')
-        usuario.cidade = request.form.get('cidade')
 
+        # >>> Salvar ESTADO e CIDADE
+        usuario.estado = (request.form.get('estado') or '').strip()
+        usuario.cidade = (request.form.get('cidade') or '').strip()
+
+        # Foto (opcional)
         foto = request.files.get('foto')
         if foto and foto.filename:
             nome_foto = secure_filename(foto.filename)
@@ -209,16 +222,23 @@ def editar_perfil():
             usuario.foto = nome_foto
 
         db.session.commit()
+
+        # Atualiza sessão (se quiser manter)
         session['usuario_nome'] = usuario.nome
         session['usuario_foto'] = usuario.foto if usuario.foto else None
+
         flash('Perfil atualizado com sucesso!', 'success')
         return redirect(url_for('editar_perfil'))
+
+    # GET -> renderiza já com as cidades do estado atual (server-side)
+    cidades_iniciais = cidades_por_estado.get(usuario.estado or '', [])
 
     return render_template(
         'editar_perfil.html',
         usuario=usuario,
-        estados=estados,
-        cidades_por_estado=cidades_por_estado
+        estados=estados_lista,                 # lista de {id, estado}
+        cidades_por_estado=cidades_por_estado, # dict { "UF": ["Cidade1", ...] }
+        cidades_iniciais=cidades_iniciais      # lista para pré-render no select cidade
     )
 
 # Rota cadastrar animal com upload de foto

@@ -43,6 +43,12 @@
             <label for="cidade" class="form-label">Cidade:</label>
             <select class="form-select" id="cidade" name="cidade" required>
                 <option value="">Selecione uma cidade</option>
+                {# Pré-render das cidades do estado atual para já aparecer selecionado #}
+                {% if cidades_iniciais %}
+                    {% for c in cidades_iniciais %}
+                        <option value="{{ c }}" {% if usuario.cidade == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                {% endif %}
             </select>
         </div>
 
@@ -51,6 +57,7 @@
             <label for="foto" class="form-label">Foto de Perfil:</label>
             <input type="file" class="form-control" id="foto" name="foto">
         </div>
+
         <div class="text-left mt-3 mb-3">
             {% if usuario.foto and usuario.foto != 'None' and usuario.foto != '' %}
                 <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}"
@@ -71,31 +78,36 @@
     </form>
 </div>
 
-<!-- Script para popular cidades dinamicamente -->
+<!-- Script para popular cidades dinamicamente ao trocar o estado -->
 <script>
-    const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+    // Mapa { "UF": ["Cidade1", "Cidade2", ...] } vindo do backend
+    const cidadesPorEstado = {{ cidades_por_estado | tojson | safe }};
     const estadoSelect = document.getElementById('estado');
     const cidadeSelect = document.getElementById('cidade');
     const usuarioCidade = "{{ usuario.cidade or '' }}";
 
-    function atualizarCidades() {
-        const sigla = estadoSelect.value;
+    function preencherCidades(uf) {
         cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
-
-        if (sigla && cidadesPorEstado[sigla]) {
-            cidadesPorEstado[sigla].forEach(cidade => {
-                const option = document.createElement('option');
-                option.value = cidade;
-                option.text = cidade;
-                if (cidade === usuarioCidade) {
-                    option.selected = true;
-                }
-                cidadeSelect.appendChild(option);
+        if (uf && cidadesPorEstado[uf]) {
+            cidadesPorEstado[uf].forEach(function(cidade) {
+                const opt = document.createElement('option');
+                opt.value = cidade;
+                opt.textContent = cidade;
+                if (cidade === usuarioCidade) opt.selected = true;
+                cidadeSelect.appendChild(opt);
             });
         }
     }
 
-    estadoSelect.addEventListener('change', atualizarCidades);
-    window.addEventListener('DOMContentLoaded', atualizarCidades);
+    // Quando muda o estado no select
+    estadoSelect.addEventListener('change', function () {
+        preencherCidades(this.value);
+    });
+
+    // Caso queira garantir que, ao carregar, reforce as cidades do estado atual:
+    document.addEventListener('DOMContentLoaded', function () {
+        const ufAtual = estadoSelect.value;
+        if (ufAtual) preencherCidades(ufAtual);
+    });
 </script>
 {% endblock %}
