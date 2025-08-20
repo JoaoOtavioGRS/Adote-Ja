@@ -91,46 +91,82 @@
 
 {% block scripts %}
 <script>
-    const racas_cachorro = ["SRD Porte Pequeno", "SRD Porte Medio", "SRD Porte Grande", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
-    const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
+    const racas_cachorro = [
+    "SRD Porte Pequeno",
+    "SRD Porte Médio",
+    "SRD Porte Grande",
+    "Poodle",
+    "Labrador Retriever",
+    "Shih Tzu",
+    "Pinscher",
+    "Yorkshire Terrier",
+    "Pastor Alemão",
+    "Golden Retriever",
+    "Bulldog Francês",
+    "Bulldog Inglês",
+    "Beagle",
+    "Boxer",
+    "Chow Chow",
+    "Spitz Alemão (Lulu da Pomerânia)",
+    "Border Collie",
+    "Rottweiler",
+    "Basset Hound",
+    "Cocker Spaniel",
+    "Maltês",
+    "Dachshund (Salsicha)",
+    "Pug",
+    "Outros"
+];
+    const racas_gato = [
+    "SRD",
+    "Persa",
+    "Siamês",
+    "Maine Coon",
+    "Angorá Turco",
+    "Ragdoll",
+    "Sphynx",
+    "Bengal",
+    "British Shorthair",
+    "American Shorthair",
+    "Abissínio",
+    "Outros"
+];
 
+// Função para atualizar o campo de raças
     function atualizarRacas() {
-        const especie = $('#especie').val();
-        let racas = [];
+        const especie = document.getElementById("especie").value;
+        const racaSelect = document.getElementById("raca");
 
+        // limpa as opções anteriores
+        racaSelect.innerHTML = "";
+
+        let racas = [];
         if (especie === "Cachorro") {
             racas = racas_cachorro;
         } else if (especie === "Gato") {
             racas = racas_gato;
         }
 
-        const $raca = $('#raca');
-        $raca.empty().append('<option value="">Selecione</option>');
+        // popula as opções
         racas.forEach(raca => {
-            const selected = (raca === "{{ animal.raca if animal else '' }}") ? 'selected' : '';
-            $raca.append(`<option value="${raca}" ${selected}>${raca}</option>`);
+            const option = document.createElement("option");
+            option.value = raca;
+            option.text = raca;
+            racaSelect.appendChild(option);
         });
-        $raca.trigger('change');
+
+        // atualiza o select2 se estiver sendo usado
+        if ($(racaSelect).hasClass("select2-hidden-accessible")) {
+            $(racaSelect).trigger("change");
+        }
     }
 
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "Selecione",
-            allowClear: true,
-            language: {
-                noResults: function() {
-                    return "Nenhum resultado encontrado";
-                },
-                searching: function() {
-                    return "Buscando...";
-                },
-                inputTooShort: function() {
-                    return "Digite mais caracteres";
-                }
-            }
-        });
-        $('#especie').on('change', atualizarRacas);
-        atualizarRacas();
+    // Evento ao mudar espécie
+    document.addEventListener("DOMContentLoaded", function () {
+        const especieSelect = document.getElementById("especie");
+        if (especieSelect) {
+            especieSelect.addEventListener("change", atualizarRacas);
+        }
     });
 </script>
 {% endblock %}

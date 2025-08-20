@@ -65,6 +65,7 @@ class Animal(db.Model):
     cidade = db.Column(db.String(50))   # Herdado do usuário
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Função global para excluir anúncios de QUALQUER usuário com mais de 30 dias
 def excluir_animais_vencidos():
     limite = datetime.utcnow() - timedelta(days=30)
     animais_vencidos = Animal.query.filter(Animal.criado_em < limite).all()

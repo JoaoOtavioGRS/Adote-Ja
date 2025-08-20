@@ -14,13 +14,33 @@
         <input type="email" name="email" class="form-control" required />
     </div>
        <div class="mb-3">
-        <label class="form-label">Senha:</label>
-        <input type="password" name="senha" class="form-control" required />
-    </div>
-    <div class="mb-3">
-    <label class="form-label">Confirmar Senha:</label>
-    <input type="password" name="confirmar_senha" class="form-control" required />
+    <label class="form-label">Senha:</label>
+    <input type="password" id="senha" name="senha" class="form-control" required>
 </div>
+<div class="mb-3">
+    <label class="form-label">Confirmar Senha:</label>
+    <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" required>
+    <small id="msg-senha" class="text-danger"></small>
+</div>
+
+<script>
+    const senha = document.getElementById("senha");
+    const confirmarSenha = document.getElementById("confirmar_senha");
+    const msg = document.getElementById("msg-senha");
+
+    function validarSenha() {
+        if (confirmarSenha.value && senha.value !== confirmarSenha.value) {
+            msg.textContent = "As senhas não coincidem.";
+            confirmarSenha.classList.add("is-invalid");
+        } else {
+            msg.textContent = "";
+            confirmarSenha.classList.remove("is-invalid");
+        }
+    }
+
+    senha.addEventListener("input", validarSenha);
+    confirmarSenha.addEventListener("input", validarSenha);
+</script>
     <div class="mb-3">
         <label class="form-label">Telefone:</label>
         <input type="text" name="telefone" class="form-control" />
