@@ -5,20 +5,20 @@
 {% endblock %}
 
 {% block content %}
-        <div class="container py-5">
-            <h1 class="mb-4 text-center">{{ 'Editar Animal' if animal else 'Cadastrar Animal' }}</h1>
+<div class="container py-5">
+    <h1 class="mb-4 text-center">{{ 'Editar Animal' if animal else 'Cadastrar Animal' }}</h1>
 
-        <div class="text-center mb-4">
-            <div class="card border-primary shadow-sm">
-                <div class="card-body">
-                    <h5 class="mb-1 text-info">Obrigado por ajudar um pet a encontrar um lar ❤️ </h5>
-                    <p class="mb-0">
-                        Todos os anúncios são removidos automaticamente após <strong>30 dias</strong>.<br>
-                        Caso o pet seja adotado antes desse prazo, você pode <strong>excluir o anúncio manualmente</strong>.
-                    </p>
-                </div>
+    <div class="text-center mb-4">
+        <div class="card border-primary shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-1 text-info">Obrigado por ajudar um pet a encontrar um lar ❤️ </h5>
+                <p class="mb-0">
+                    Todos os anúncios são removidos automaticamente após <strong>30 dias</strong>.<br>
+                    Caso o pet seja adotado antes desse prazo, você pode <strong>excluir o anúncio manualmente</strong>.
+                </p>
             </div>
         </div>
+    </div>
 
     <form method="POST" enctype="multipart/form-data" class="row g-3"
           action="{{ url_for('cadastrar_ou_editar_animal', id=animal.id if animal else None) }}">
@@ -92,62 +92,32 @@
 {% block scripts %}
 <script>
     const racas_cachorro = [
-    "SRD Porte Pequeno",
-    "SRD Porte Médio",
-    "SRD Porte Grande",
-    "Poodle",
-    "Labrador Retriever",
-    "Shih Tzu",
-    "Pinscher",
-    "Yorkshire Terrier",
-    "Pastor Alemão",
-    "Golden Retriever",
-    "Bulldog Francês",
-    "Bulldog Inglês",
-    "Beagle",
-    "Boxer",
-    "Chow Chow",
-    "Spitz Alemão (Lulu da Pomerânia)",
-    "Border Collie",
-    "Rottweiler",
-    "Basset Hound",
-    "Cocker Spaniel",
-    "Maltês",
-    "Dachshund (Salsicha)",
-    "Pug",
-    "Outros"
-];
-    const racas_gato = [
-    "SRD",
-    "Persa",
-    "Siamês",
-    "Maine Coon",
-    "Angorá Turco",
-    "Ragdoll",
-    "Sphynx",
-    "Bengal",
-    "British Shorthair",
-    "American Shorthair",
-    "Abissínio",
-    "Outros"
-];
+        "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle",
+        "Labrador Retriever", "Shih Tzu", "Pinscher", "Yorkshire Terrier",
+        "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Bulldog Inglês",
+        "Beagle", "Boxer", "Chow Chow", "Spitz Alemão (Lulu da Pomerânia)",
+        "Border Collie", "Rottweiler", "Basset Hound", "Cocker Spaniel",
+        "Maltês", "Dachshund (Salsicha)", "Pug", "Outros"
+    ];
 
-// Função para atualizar o campo de raças
-    function atualizarRacas() {
+    const racas_gato = [
+        "SRD", "Persa", "Siamês", "Maine Coon", "Angorá Turco", "Ragdoll",
+        "Sphynx", "Bengal", "British Shorthair", "American Shorthair",
+        "Abissínio", "Outros"
+    ];
+
+    function atualizarRacas(racaAtual = null) {
         const especie = document.getElementById("especie").value;
         const racaSelect = document.getElementById("raca");
 
-        // limpa as opções anteriores
+        // limpa opções
         racaSelect.innerHTML = "";
 
         let racas = [];
-        if (especie === "Cachorro") {
-            racas = racas_cachorro;
-        } else if (especie === "Gato") {
-            racas = racas_gato;
-        }
+        if (especie === "Cachorro") racas = racas_cachorro;
+        else if (especie === "Gato") racas = racas_gato;
 
-        // popula as opções
+        // popula opções
         racas.forEach(raca => {
             const option = document.createElement("option");
             option.value = raca;
@@ -155,17 +125,31 @@
             racaSelect.appendChild(option);
         });
 
-        // atualiza o select2 se estiver sendo usado
+        // seleciona a raça atual ou adiciona se não estiver na lista
+        if (racaAtual) {
+            if (!racas.includes(racaAtual)) {
+                const option = document.createElement("option");
+                option.value = racaAtual;
+                option.text = racaAtual;
+                racaSelect.appendChild(option);
+            }
+            racaSelect.value = racaAtual;
+        }
+
         if ($(racaSelect).hasClass("select2-hidden-accessible")) {
             $(racaSelect).trigger("change");
         }
     }
 
-    // Evento ao mudar espécie
     document.addEventListener("DOMContentLoaded", function () {
         const especieSelect = document.getElementById("especie");
         if (especieSelect) {
-            especieSelect.addEventListener("change", atualizarRacas);
+            // Atualiza raças com a raça do animal se houver
+            atualizarRacas("{{ animal.raca if animal else '' }}");
+
+            especieSelect.addEventListener("change", function () {
+                atualizarRacas();
+            });
         }
     });
 </script>
