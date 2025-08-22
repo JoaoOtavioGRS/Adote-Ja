@@ -64,6 +64,7 @@ class Animal(db.Model):
     estado = db.Column(db.String(50))   # Herdado do usuário
     cidade = db.Column(db.String(50))   # Herdado do usuário
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    ativo = db.Column(db.Boolean, default=True)  # NOVO: controla se o anúncio está ativo
 
 # Função global para excluir anúncios de QUALQUER usuário com mais de 30 dias
 def excluir_animais_vencidos():
@@ -363,7 +364,6 @@ def cadastrar_ou_editar_animal(id=None):
     # GET
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
-# Ajuste da rota listar_animais para aceitar estado/cidade
 @app.route('/listar_animais')
 def listar_animais():
     if 'usuario_id' not in session:
@@ -423,6 +423,10 @@ def listar_animais():
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
     estados_lista.sort(key=lambda e: e['estado'].lower())
 
+    # Calcula dias restantes para cada animal
+    for animal in animais:
+        animal.dias_para_exclusao = (30 - (datetime.utcnow() - animal.criado_em).days)
+
     return render_template('listar_animais.html', animais=animais, meus_anuncios=False,
                            pagina_atual='listar_animais', estados=estados_lista, cidades_por_estado=cidades_por_estado)
 
@@ -462,6 +466,9 @@ def meus_anuncios():
     for uf in cidades_por_estado:
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
     estados_lista.sort(key=lambda e: e['estado'].lower())
+
+    for animal in animais:
+        animal.dias_para_exclusao = 30 - (datetime.utcnow() - animal.criado_em).days
 
     return render_template(
         'listar_animais.html',  # Podemos reutilizar o mesmo template

@@ -82,88 +82,93 @@
     {% endif %}
 
     {% if animais %}
-        {% for animal in animais %}
-            <div class="card mb-3 shadow-sm">
-                <div class="row g-0 align-items-center">
-                    <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
-                        <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
-                             alt="Foto do animal"
-                             class="rounded-start"
-                             style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
-                    </div>
-                    <div class="col-md-8 px-4 py-3">
-             <div class="d-flex justify-content-between align-items-start">
-                      <div>
+{% for animal in animais %}
+    <div class="card mb-3 shadow-sm">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
+                     alt="Foto do animal"
+                     class="rounded-start"
+                     style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+            </div>
+            <div class="col-md-8 px-4 py-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
                         <h4 class="card-title mb-1">{{ animal.nome }}</h4>
                         <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
-                      </div>
-                      <div class="d-flex">
+                    </div>
+                    <div class="d-flex">
                         {% if session['usuario_id'] == animal.usuario.id %}
-                          <!-- Botão doador (quando é o próprio dono, vai para a esquerda) -->
-                          <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}"
-                             class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
-                            <i class="fas fa-user"></i>
-                          </a>
-
-                          <!-- Botões editar/excluir -->
-                          <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}"
-                             class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                            <i class="fas fa-edit"></i>
-                          </a>
-                          <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
-                              <i class="fas fa-trash-alt"></i>
-                            </button>
-                          </form>
+                            <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
+                                <i class="fas fa-user"></i>
+                            </a>
+                            <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
                         {% else %}
-                          <!-- Botão doador (quando NÃO é o dono, fica sozinho à direita) -->
-                          <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}"
-                             class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
-                            <i class="fas fa-user"></i>
-                          </a>
+                            <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
+                                <i class="fas fa-user"></i>
+                            </a>
                         {% endif %}
-                      </div>
-</div>
-
-                        <hr class="my-2">
-
-                        <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
-                                {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
-                                {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-map-marker-alt me-2 text-danger"></i><strong>Local:</strong>&nbsp;{{ animal.cidade or 'Não informado' }} - {{ animal.estado or '' }}
-                            </div>
-                            <div class="col d-flex align-items-center">
-                                <i class="fas fa-phone me-2 text-muted"></i>
-                                <strong>Contato:</strong>&nbsp;
-                                {% if animal.usuario.telefone %}
-                                    <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}" target="_blank" class="btn btn-success btn-sm">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </a>
-                                {% else %}
-                                    Não informado
-                                {% endif %}
-                            </div>
-                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+
+                <hr class="my-2">
+
+                <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
+                        {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
+                        {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-map-marker-alt me-2 text-danger"></i><strong>Local:</strong>&nbsp;{{ animal.cidade or 'Não informado' }} - {{ animal.estado or '' }}
+                    </div>
+                    <div class="col d-flex align-items-center">
+                        <i class="fas fa-phone me-2 text-muted"></i>
+                        <strong>Contato:</strong>&nbsp;
+                        {% if animal.usuario.telefone %}
+                            <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}" target="_blank" class="btn btn-success btn-sm">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                        {% else %}
+                            Não informado
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ALERTA FIXO EMBAIXO DO CARD -->
+                           {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
+                          <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
+                              ⚠️ Este anúncio será inativado em {{ animal.dias_para_exclusao }} dias.
+                          </div>
+                        {% elif animal.dias_para_exclusao <= 0 %}
+                          <div class="card-alert-danger mt-2 mb-0 p-2 rounded">
+                              ⚠️ Este anúncio está prestes a ser inativado!
+                          </div>
+                        {% endif %}
+            </div> <!-- fim col-md-8 px-4 py-3 -->
+        </div> <!-- fim row g-0 -->
+    </div> <!-- fim card mb-3 shadow-sm -->
+{% endfor %}
+
     {% else %}
         <p class="text-center">Nenhum animal encontrado.</p>
     {% endif %}
