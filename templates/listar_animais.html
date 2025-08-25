@@ -157,11 +157,11 @@
                 <!-- ALERTA FIXO EMBAIXO DO CARD -->
                            {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
                           <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
-                              ⚠️ Este anúncio será inativado em {{ animal.dias_para_exclusao }} dias.
+                              ⚠️ Este anúncio expira em {{ animal.dias_para_exclusao }} dias.
                           </div>
                         {% elif animal.dias_para_exclusao <= 0 %}
                           <div class="card-alert-danger mt-2 mb-0 p-2 rounded">
-                              ⚠️ Este anúncio está prestes a ser inativado!
+                              ⚠️ Este anúncio está prestes a expirar!
                           </div>
                         {% endif %}
             </div> <!-- fim col-md-8 px-4 py-3 -->

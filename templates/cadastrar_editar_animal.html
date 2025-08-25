@@ -50,25 +50,24 @@
             </select>
         </div>
 
-        <div class="col-md-6">
-            <label for="vacinado" class="form-label">Vacinado:</label>
-            <select class="form-select select2" name="vacinado" required>
-                <option value="">Selecione</option>
-                <option value="0" {% if animal and animal.vacinado == 0 %}selected{% endif %}>Sim</option>
-                <option value="1" {% if animal and animal.vacinado == 1 %}selected{% endif %}>Não</option>
-                <option value="2" {% if animal and animal.vacinado == 2 %}selected{% endif %}>Não sei</option>
-            </select>
-        </div>
+                <div class="col-md-6">
+                    <label for="vacinado" class="form-label">Vacinado:</label>
+                    <select class="form-select select2" name="vacinado" required>
+                        <option value="2" {% if (animal and animal.vacinado == 2) or not animal %}selected{% endif %}>Não sei</option>
+                        <option value="0" {% if animal and animal.vacinado == 0 %}selected{% endif %}>Sim</option>
+                        <option value="1" {% if animal and animal.vacinado == 1 %}selected{% endif %}>Não</option>
+                    </select>
+                </div>
 
-        <div class="col-md-6">
-            <label for="castrado" class="form-label">Castrado:</label>
-            <select class="form-select select2" name="castrado" required>
-                <option value="">Selecione</option>
-                <option value="0" {% if animal and animal.castrado == 0 %}selected{% endif %}>Sim</option>
-                <option value="1" {% if animal and animal.castrado == 1 %}selected{% endif %}>Não</option>
-                <option value="2" {% if animal and animal.castrado == 2 %}selected{% endif %}>Não sei</option>
-            </select>
-        </div>
+                <div class="col-md-6">
+                    <label for="castrado" class="form-label">Castrado:</label>
+                    <select class="form-select select2" name="castrado" required>
+                        <option value="2" {% if (animal and animal.castrado == 2) or not animal %}selected{% endif %}>Selecione</option>
+                        <option value="0" {% if animal and animal.castrado == 0 %}selected{% endif %}>Sim</option>
+                        <option value="1" {% if animal and animal.castrado == 1 %}selected{% endif %}>Não</option>
+                    </select>
+                </div>
+
 
         <div class="col-md-6">
             <label for="foto" class="form-label">Foto do Animal:</label>
