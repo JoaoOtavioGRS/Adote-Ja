@@ -19,6 +19,31 @@
             <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
         </div>
 
+        <!-- Botão para mostrar os campos de senha -->
+        <div class="mb-3">
+            <button type="button" id="btn_alterar_senha" class="btn btn-secondary btn-sm">
+                Alterar Senha
+            </button>
+        </div>
+
+        <!-- Campos de alteração de senha (escondidos inicialmente) -->
+        <div id="campos_senha" style="display: none;">
+            <div class="mb-3">
+                <label for="senha_atual" class="form-label">Senha Atual:</label>
+                <input type="password" class="form-control" id="senha_atual" name="senha_atual">
+            </div>
+
+            <div class="mb-3">
+                <label for="nova_senha" class="form-label">Nova Senha:</label>
+                <input type="password" class="form-control" id="nova_senha" name="nova_senha">
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmar_senha" class="form-label">Confirmar Nova Senha:</label>
+                <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha">
+            </div>
+        </div>
+
         <!-- Telefone -->
         <div class="mb-3">
             <label for="telefone" class="form-label">Telefone:</label>
@@ -108,6 +133,23 @@
     document.addEventListener('DOMContentLoaded', function () {
         const ufAtual = estadoSelect.value;
         if (ufAtual) preencherCidades(ufAtual);
+    });
+</script>
+
+<script>
+    document.getElementById("btn_alterar_senha").addEventListener("click", function() {
+        let camposSenha = document.getElementById("campos_senha");
+        if (camposSenha.style.display === "none") {
+            camposSenha.style.display = "block";
+            this.innerText = "Cancelar Alteração de Senha";
+            this.classList.remove("btn-warning");
+            this.classList.add("btn-secondary");
+        } else {
+            camposSenha.style.display = "none";
+            this.innerText = "Alterar Senha";
+            this.classList.remove("btn-secondary");
+            this.classList.add("btn-warning");
+        }
     });
 </script>
 {% endblock %}

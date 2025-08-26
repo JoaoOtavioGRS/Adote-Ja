@@ -157,7 +157,7 @@
                 <!-- ALERTA FIXO EMBAIXO DO CARD -->
                            {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
                           <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
-                              ⚠️ Este anúncio expira em {{ animal.dias_para_exclusao }} dias.
+                              ⚠️ Este anúncio Expira em: {{ animal.dias_para_exclusao if animal.dias_para_exclusao > 0 else 0 }} dias
                           </div>
                         {% elif animal.dias_para_exclusao <= 0 %}
                           <div class="card-alert-danger mt-2 mb-0 p-2 rounded">

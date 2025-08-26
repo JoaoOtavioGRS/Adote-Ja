@@ -6,9 +6,7 @@
 <div class="container mt-4">
     <h2 class="mb-4">Meus Anúncios</h2>
 
-    {% set ativos = anuncios | selectattr('ativo', 'equalto', 1) | list %}
-    {% set inativos = anuncios | selectattr('ativo', 'equalto', 0) | list %}
-
+    <!-- ===== Anúncios Ativos ===== -->
     <h4 class="mt-4">Anúncios Ativos</h4>
     {% if ativos %}
         {% for animal in ativos %}
@@ -63,6 +61,17 @@
                                 <i class="fas fa-phone me-2 text-muted"></i><strong>Contato:</strong>&nbsp;Você mesmo
                             </div>
                         </div>
+
+                        <!-- ALERTA FIXO EMBAIXO DO CARD -->
+                        {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
+                            <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
+                                ⚠️ Este anúncio Expira em: {{ animal.dias_para_exclusao }} dias
+                            </div>
+                        {% elif animal.dias_para_exclusao <= 0 %}
+                            <div class="card-alert-danger mt-2 mb-0 p-2 rounded">
+                                ⚠️ Este anúncio está prestes a expirar!
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -73,20 +82,56 @@
         </div>
     {% endif %}
 
+    <div class="flex-grow-1 border-bottom"></div>
+
+    <!-- ===== Anúncios Inativos ===== -->
     <h4 class="mt-4">Anúncios Inativos</h4>
     {% if inativos %}
         {% for animal in inativos %}
-            <div class="card mb-3 shadow-sm" style="opacity: 0.6;">
+            <div class="card mb-3 shadow-sm position-relative" style="opacity:0.6;">
+                <!-- Botão Reativar no canto superior direito -->
+                <form method="POST" action="{{ url_for('reativar_animal', id=animal.id) }}" class="position-absolute top-0 end-0 m-3">
+                    <button type="submit" class="btn btn-sm btn-success">Reativar anúncio</button>
+                </form>
+
                 <div class="row g-0 align-items-center">
-                    <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                    <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height:200px;">
                         <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
                              alt="Foto do animal"
                              class="rounded-start"
-                             style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+                             style="width:200px; height:200px; object-fit:cover; border:1px solid #dee2e6;">
                     </div>
+
                     <div class="col-md-8 px-4 py-3">
                         <h4 class="card-title mb-1">{{ animal.nome }}</h4>
                         <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
+                        <hr class="my-2">
+
+                        <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
+                                {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
+                                {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
+                            </div>
+                            <div class="col d-flex align-items-center">
+                                <i class="fas fa-phone me-2 text-muted"></i><strong>Contato:</strong>&nbsp;Você mesmo
+                            </div>
+                        </div>
+
+                       <small class="text-danger fw-bold">Anúncio Expirado</small>
+
                     </div>
                 </div>
             </div>
@@ -96,10 +141,10 @@
             Nenhum anúncio inativo.
         </div>
     {% endif %}
-</div>
 
-<div class="text-end mt-4">
-    <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
+    <div class="text-end mt-4">
+        <button class="btn btn-secondary" onclick="scrollToTop()">Voltar ao Topo <i class="fa-solid fa-circle-up"></i></button>
+    </div>
 </div>
 
 <script>
