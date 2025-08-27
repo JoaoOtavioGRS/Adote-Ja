@@ -39,6 +39,9 @@ os.makedirs(app.config['UPLOAD_FOLDER_ANIMAL'], exist_ok=True)
 
 db = SQLAlchemy(app)
 
+def agora_sp():
+    return datetime.utcnow() + timedelta(hours=-3)
+
 # MODELOS
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -65,30 +68,30 @@ class Animal(db.Model):
     foto = db.Column(db.String(200))
     estado = db.Column(db.String(50))   # Herdado do usuário
     cidade = db.Column(db.String(50))   # Herdado do usuário
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    criado_em = db.Column(db.DateTime, default=agora_sp)  # função chamada automaticamente
     ativo = db.Column(db.Boolean, default=True)  # NOVO: controla se o anúncio está ativo
-    data_validade = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=30))  # NOVO
+    data_validade = db.Column(db.DateTime, default=lambda: agora_sp() + timedelta(days=30))  #
 
-    def inativar_animais_vencidos():
-        hoje = datetime.utcnow()
-        animais_expirados = Animal.query.filter(Animal.ativo == True, Animal.data_validade <= hoje).all()
-        for animal in animais_expirados:
-            animal.ativo = False
+
+def inativar_animais_vencidos():
+    # Define fuso horário de São Paulo
+    sp_tz = pytz.timezone('America/Sao_Paulo')
+    hoje = datetime.now(sp_tz)
+
+    # Pega todos os animais ativos cuja data_validade já passou
+    animais_expirados = Animal.query.filter(
+        Animal.ativo == True,
+        Animal.data_validade <= hoje
+    ).all()
+
+    houve_alteracao = False
+    for animal in animais_expirados:
+        animal.ativo = False
+        houve_alteracao = True
+        print(f"Inativado: {animal.nome} (ID {animal.id})")
+
+    if houve_alteracao:
         db.session.commit()
-
-
-"""# Função global para excluir anúncios de QUALQUER usuário com mais de 30 dias
-def excluir_animais_vencidos():
-    limite = datetime.utcnow() - timedelta(days=30)
-    animais_vencidos = Animal.query.filter(Animal.criado_em < limite).all()
-
-    for animal in animais_vencidos:
-        if 'usuario_id' in session and session['usuario_id'] == animal.usuario_id:
-            flash(f"O anúncio do animal '{animal.nome}' foi removido por estar publicado há mais de 30 dias.", 'warning')
-        db.session.delete(animal)
-
-    db.session.commit()
-"""
 
 # Função para carregar cidades de um estado específico
 def carregar_cidades(estado_sigla):
@@ -105,11 +108,13 @@ def carregar_cidades(estado_sigla):
 def formatar_telefone_whatsapp(telefone):
     if not telefone:
         return ''
-    # Remove tudo que não é número
     numeros = re.sub(r'\D', '', telefone)
-    # Adiciona o código do Brasil +55 caso não tenha (assumindo)
-    if not numeros.startswith('55'):
-        numeros = '55' + numeros
+    if numeros.startswith('55'):  # remove o DDI para formatar visualmente
+        numeros = numeros[2:]
+    if len(numeros) == 11:  # celular com DDD
+        return f"({numeros[:2]}) {numeros[2:7]}-{numeros[7:]}"
+    elif len(numeros) == 10:  # fixo com DDD
+        return f"({numeros[:2]}) {numeros[2:6]}-{numeros[6:]}"
     return numeros
 
 # Rota para cadastro de usuário, com foto opcional
@@ -436,31 +441,33 @@ def listar_animais():
 
     animais = query.filter(Animal.ativo == True).order_by(Animal.criado_em.desc()).all()
 
-    # ===== Carregar estados e cidades dos JSON =====
-    estados_path = os.path.join(DATA_DIR, 'estados.json')
-    with open(estados_path, 'r', encoding='utf-8') as f:
-        estados_lista = json.load(f)['estados']
+    # ===== Carregar apenas cidades que possuem animais ativos =====
+    cidades_query = db.session.query(Usuario.estado, Usuario.cidade) \
+        .join(Animal) \
+        .filter(Animal.ativo == True) \
+        .group_by(Usuario.estado, Usuario.cidade) \
+        .all()
 
     cidades_por_estado = {}
-    cidades_dir = os.path.join(DATA_DIR, 'cidades')
-    if os.path.isdir(cidades_dir):
-        for arquivo in os.listdir(cidades_dir):
-            if arquivo.endswith('.json'):
-                caminho = os.path.join(cidades_dir, arquivo)
-                with open(caminho, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    for item in data.get('cidades', []):
-                        uf = item.get('id')
-                        nome = item.get('cidade')
-                        if uf and nome:
-                            cidades_por_estado.setdefault(uf, []).append(nome)
+    for uf, cidade_nome in cidades_query:
+        if uf and cidade_nome:
+            cidades_por_estado.setdefault(uf, []).append(cidade_nome)
+
+    # Ordenar cidades
     for uf in cidades_por_estado:
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
+
+    # ===== Filtrar estados que possuem animais =====
+    estados_lista = []
+    for e in json.load(open(os.path.join(DATA_DIR, 'estados.json'), encoding='utf-8'))['estados']:
+        if e['id'] in cidades_por_estado:  # só adiciona estados com cidades ativas
+            estados_lista.append(e)
+
     estados_lista.sort(key=lambda e: e['estado'].lower())
 
     # ===== Calcular dias para expiração e inativar se necessário =====
     houve_alteracao = False
-    agora = datetime.utcnow()
+    agora = agora_sp()
 
     for animal in animais:
         if not animal.data_validade or animal.data_validade < animal.criado_em:
@@ -487,7 +494,6 @@ def listar_animais():
         estados=estados_lista,
         cidades_por_estado=cidades_por_estado
     )
-
 
 @app.route('/perfil_doador/<int:usuario_id>')
 def perfil_doador(usuario_id):
@@ -531,7 +537,7 @@ def meus_anuncios():
     ativos = []
     inativos = []
     houve_alteracao = False
-    agora = datetime.utcnow()
+    agora = agora_sp()
 
     for animal in animais:
         if not animal.data_validade or animal.data_validade < animal.criado_em:
@@ -575,7 +581,7 @@ def reativar_animal(id):
         return redirect(url_for('meus_anuncios'))
 
     animal.ativo = True
-    animal.data_validade = datetime.utcnow() + timedelta(days=30)  # renova validade
+    animal.data_validade = agora_sp() + timedelta(days=30)  # renova validade
     db.session.commit()
 
     flash('Anúncio reativado com sucesso! 🐾', 'success')

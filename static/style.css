@@ -48,3 +48,19 @@ p {
     box-shadow: none;  /* remove o efeito de foco do Bootstrap */
     outline: none;
 }
+
+.card .col {
+    max-width: 150px;
+    white-space: nowrap; /* evita quebra de linha */
+    overflow: hidden;    /* esconde o excesso */
+    text-overflow: ellipsis; /* mostra "..." no fim */
+}
+
+.truncate-tooltip {
+    display: inline-block;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}

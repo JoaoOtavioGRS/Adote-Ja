@@ -47,7 +47,7 @@
         <!-- Telefone -->
         <div class="mb-3">
             <label for="telefone" class="form-label">Telefone:</label>
-            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone }}" required>
+            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone | formatar_telefone_whatsapp }}" required>
         </div>
 
         <!-- Estado -->

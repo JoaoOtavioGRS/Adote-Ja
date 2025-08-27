@@ -57,22 +57,26 @@
 
         {% if not meus_anuncios %}
         <div class="col-md-2">
-            <label class="form-label">Estado:</label>
-            <select class="form-select select2" id="estado" name="estado">
-                <option value="">Indiferente</option>
-                {% for e in estados %}
-                    <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <label class="form-label">Estado:</label>
+    <select class="form-select select2" id="estado" name="estado">
+        <option value="">Indiferente</option>
+        {% for e in estados %}
+            <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
+        {% endfor %}
+    </select>
+</div>
 
-        <div class="col-md-2">
-            <label class="form-label">Cidade:</label>
-            <select class="form-select select2" id="cidade" name="cidade">
-                <option value="">Indiferente</option>
-            </select>
-        </div>
+
+<div class="col-md-2">
+    <label class="form-label">Cidade:</label>
+    <select class="form-select select2" id="cidade" name="cidade">
+        <option value="">Indiferente</option>
+    </select>
+</div>
         {% endif %}
+         <small class="text-secondary">
+         Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
+    </small>
 
         <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
@@ -125,8 +129,16 @@
                         <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
                     </div>
                     <div class="col d-flex align-items-center">
-                        <i class="fas fa-dog me-2 text-secondary"></i><strong>Raça:</strong>&nbsp;{{ animal.raca or 'Não informado' }}
+                        <i class="fas fa-dog me-2 text-secondary"></i>
+                        <strong>Raça:</strong>&nbsp;
+                        <span class="text-truncate"
+                              style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              title="{{ animal.raca or 'Não informado' }}"
+                              data-bs-toggle="tooltip">
+                            {{ animal.raca or 'Não informado' }}
+                        </span>
                     </div>
+
                     <div class="col d-flex align-items-center">
                         <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
                     </div>
@@ -138,15 +150,26 @@
                         <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
                         {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
                     </div>
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-map-marker-alt me-2 text-danger"></i><strong>Local:</strong>&nbsp;{{ animal.cidade or 'Não informado' }} - {{ animal.estado or '' }}
+                     <div class="col d-flex align-items-center">
+                        <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                        <strong>Local:</strong>&nbsp;
+                       <span class="text-truncate"
+                              style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              title="{{ animal.cidade }} - {{ animal.estado }}"
+                              data-bs-toggle="tooltip">
+                            {{ animal.cidade }} - {{ animal.estado }}
+                        </span>
                     </div>
-                    <div class="col d-flex align-items-center">
+                   <div class="col d-flex align-items-center">
                         <i class="fas fa-phone me-2 text-muted"></i>
                         <strong>Contato:</strong>&nbsp;
                         {% if animal.usuario.telefone %}
-                            <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}" target="_blank" class="btn btn-success btn-sm">
-                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}"
+                               target="_blank"
+                               class="btn btn-success btn-sm py-0 px-2"
+                               title="Clique para abrir no WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                                Whatsapp
                             </a>
                         {% else %}
                             Não informado
@@ -174,8 +197,10 @@
     {% endif %}
 
     <div class="text-end mt-4">
-        <button class="btn btn-secondary" onclick="scrollToTop()"> Voltar ao Topo <i class="fa-solid fa-circle-up"></i> </button>
-    </div>
+    <button class="btn btn-primary" onclick="scrollToTop()">
+        Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
+    </button>
+</div>
 </div>
 {% endblock %}
 
@@ -240,5 +265,10 @@
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
 </script>
 {% endblock %}
