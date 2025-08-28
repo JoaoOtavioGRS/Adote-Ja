@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}{{ 'Meus Anúncios 🐾' if meus_anuncios else 'Animais Disponíveis para Adoção 🐾' }}{% endblock %}
+{% block title %}
+{{ 'Meus Anúncios 🐾' if meus_anuncios else 'Animais Disponíveis para Adoção 🐾' }}
+{% endblock %}
 
 {% block content %}
 <div>
@@ -55,28 +57,26 @@
             </select>
         </div>
 
-        {% if not meus_anuncios %}
         <div class="col-md-2">
-    <label class="form-label">Estado:</label>
-    <select class="form-select select2" id="estado" name="estado">
-        <option value="">Indiferente</option>
-        {% for e in estados %}
-            <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
-        {% endfor %}
-    </select>
-</div>
+            <label class="form-label">Estado:</label>
+            <select class="form-select select2" id="estado" name="estado">
+                <option value="">Indiferente</option>
+                {% for e in estados %}
+                    <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
+        <div class="col-md-2">
+            <label class="form-label">Cidade:</label>
+            <select class="form-select select2" id="cidade" name="cidade">
+                <option value="">Indiferente</option>
+            </select>
+        </div>
 
-<div class="col-md-2">
-    <label class="form-label">Cidade:</label>
-    <select class="form-select select2" id="cidade" name="cidade">
-        <option value="">Indiferente</option>
-    </select>
-</div>
-        {% endif %}
-         <small class="text-secondary">
-         Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
-    </small>
+        <small class="text-secondary">
+            Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
+        </small>
 
         <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
@@ -86,138 +86,128 @@
     {% endif %}
 
     {% if animais %}
-{% for animal in animais %}
-    <div class="card mb-3 shadow-sm">
-        <div class="row g-0 align-items-center">
-            <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
-                <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
-                     alt="Foto do animal"
-                     class="rounded-start"
-                     style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+        {% for animal in animais %}
+        <div class="card mb-3 shadow-sm">
+            <div class="row g-0 align-items-center">
+                <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height: 200px;">
+                    <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
+                         alt="Foto do animal"
+                         class="rounded-start"
+                         style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #dee2e6;">
+                </div>
+
+                <div class="col-md-8 px-4 py-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="card-title mb-1">{{ animal.nome }}</h4>
+                            <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
+                        </div>
+
+                        <div class="d-flex">
+                            {% if session['usuario_id'] == animal.usuario.id %}
+                                <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-dog me-2 text-secondary"></i>
+                            <strong>Raça:</strong>&nbsp;
+                            <span class="text-truncate" style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ animal.raca or 'Não informado' }}" data-bs-toggle="tooltip">
+                                {{ animal.raca or 'Não informado' }}
+                            </span>
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
+                            {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
+                            {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                            <strong>Local:</strong>&nbsp;
+                            <span class="text-truncate" style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ animal.cidade }} - {{ animal.estado }}" data-bs-toggle="tooltip">
+                                {{ animal.cidade }} - {{ animal.estado }}
+                            </span>
+                        </div>
+
+                        <div class="col d-flex align-items-center">
+                            {% if animal.usuario.telefone %}
+                                <i class="fas fa-phone me-2 text-muted"></i>
+                            {% else %}
+                                <i class="fas fa-envelope me-2 text-muted"></i>
+                            {% endif %}
+                            <strong>Contato:</strong>&nbsp;
+                            {% if animal.usuario.telefone %}
+                                <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}" target="_blank" class="btn btn-success btn-sm py-0 px-2" title="Clique para abrir no WhatsApp">
+                                    <i class="fab fa-whatsapp"></i> Whatsapp
+                                </a>
+                            {% else %}
+                                <a href="mailto:{{ animal.usuario.email }}" class="text-muted">{{ animal.usuario.email }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ALERTA FIXO EMBAIXO DO CARD -->
+                    {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
+                        <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
+                            ⚠️ Este anúncio Expira em: {{ animal.dias_para_exclusao }} dias
+                        </div>
+                    {% elif animal.dias_para_exclusao <= 0 %}
+                        <div class="card-alert-danger mt-2 mb-0 p-2 rounded">
+                            ⚠️ Este anúncio está prestes a expirar!
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="col-md-8 px-4 py-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h4 class="card-title mb-1">{{ animal.nome }}</h4>
-                        <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
-                    </div>
-                    <div class="d-flex">
-                        {% if session['usuario_id'] == animal.usuario.id %}
-                            <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
-                                <i class="fas fa-user"></i>
-                            </a>
-                            <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
-                        {% else %}
-                            <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
-                                <i class="fas fa-user"></i>
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <hr class="my-2">
-
-                <div class="row row-cols-2 row-cols-md-3 gx-3 gy-2">
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-paw me-2 text-primary"></i><strong>Espécie:</strong>&nbsp;{{ animal.especie }}
-                    </div>
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-dog me-2 text-secondary"></i>
-                        <strong>Raça:</strong>&nbsp;
-                        <span class="text-truncate"
-                              style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                              title="{{ animal.raca or 'Não informado' }}"
-                              data-bs-toggle="tooltip">
-                            {{ animal.raca or 'Não informado' }}
-                        </span>
-                    </div>
-
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-venus-mars me-2 text-info"></i><strong>Sexo:</strong>&nbsp;{{ animal.sexo or 'Não informado' }}
-                    </div>
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-syringe me-2 text-success"></i><strong>Vacinado:</strong>&nbsp;
-                        {% if animal.vacinado == 0 %}Sim{% elif animal.vacinado == 1 %}Não{% else %}Não sei{% endif %}
-                    </div>
-                    <div class="col d-flex align-items-center">
-                        <i class="fas fa-scissors me-2 text-warning"></i><strong>Castrado:</strong>&nbsp;
-                        {% if animal.castrado == 0 %}Sim{% elif animal.castrado == 1 %}Não{% else %}Não sei{% endif %}
-                    </div>
-                     <div class="col d-flex align-items-center">
-                        <i class="fas fa-map-marker-alt me-2 text-danger"></i>
-                        <strong>Local:</strong>&nbsp;
-                       <span class="text-truncate"
-                              style="display: inline-block; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                              title="{{ animal.cidade }} - {{ animal.estado }}"
-                              data-bs-toggle="tooltip">
-                            {{ animal.cidade }} - {{ animal.estado }}
-                        </span>
-                    </div>
-                   <div class="col d-flex align-items-center">
-                       {% if animal.usuario.telefone %}
-                        <i class="fas fa-phone me-2 text-muted"></i>
-                    {% else %}
-                        <i class="fas fa-envelope me-2 text-muted"></i>
-                    {% endif %}
-                    <strong>Contato:</strong>&nbsp;
-
-                    {% if animal.usuario.telefone %}
-                        <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}"
-                           target="_blank"
-                           class="btn btn-success btn-sm py-0 px-2"
-                           title="Clique para abrir no WhatsApp">
-                            <i class="fab fa-whatsapp"></i>
-                            Whatsapp
-                        </a>
-                    {% else %}
-                        <a href="mailto:{{ animal.usuario.email }}" class="text-muted">{{ animal.usuario.email }}</a>
-                    {% endif %}
-                    </div>
-                </div>
-
-                <!-- ALERTA FIXO EMBAIXO DO CARD -->
-                           {% if animal.dias_para_exclusao <= 7 and animal.dias_para_exclusao > 0 %}
-                          <div class="card-alert-warning mt-2 mb-0 p-2 rounded">
-                              ⚠️ Este anúncio Expira em: {{ animal.dias_para_exclusao if animal.dias_para_exclusao > 0 else 0 }} dias
-                          </div>
-                        {% elif animal.dias_para_exclusao <= 0 %}
-                          <div class="card-alert-danger mt-2 mb-0 p-2 rounded">
-                              ⚠️ Este anúncio está prestes a expirar!
-                          </div>
-                        {% endif %}
-            </div> <!-- fim col-md-8 px-4 py-3 -->
-        </div> <!-- fim row g-0 -->
-    </div> <!-- fim card mb-3 shadow-sm -->
-{% endfor %}
-
+        </div>
+        {% endfor %}
     {% else %}
         <p class="text-center">Nenhum animal encontrado.</p>
     {% endif %}
 
     <div class="text-end mt-4">
-    <button class="btn btn-primary" onclick="scrollToTop()">
-        Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
-    </button>
-</div>
+        <button class="btn btn-primary" onclick="scrollToTop()">
+            Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
+        </button>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    const racas_cachorro = [
-        "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande",
-        "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire",
-        "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"
-    ];
+    const racas_cachorro = ["SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
     const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
-
     const cidadesPorEstado = {{ cidades_por_estado | tojson }};
     const filtroCidade = "{{ request.args.get('cidade','') }}";
 
@@ -252,7 +242,11 @@
     }
 
     $(document).ready(function() {
-        $('.select2').select2({ placeholder: "Selecione", allowClear: true });
+        $('.select2').select2({
+            placeholder: "Selecione",
+            allowClear: true,
+            language: { noResults: () => "Nenhum resultado encontrado" }
+        });
 
         $('#especie').on('change', atualizarRacas);
         $('#estado').on('change', atualizarCidades);
@@ -265,39 +259,13 @@
             $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
             $('#formFiltros').submit();
         });
+
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
     });
 
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-
-    $(document).ready(function() {
-    $('.select2').select2({
-        placeholder: "Selecione",
-        allowClear: true,
-        language: {
-            noResults: function() {
-                return "Nenhum resultado encontrado";
-            }
-        }
-    });
-
-    $('#especie').on('change', atualizarRacas);
-    $('#estado').on('change', atualizarCidades);
-
-    atualizarRacas();
-    atualizarCidades();
-
-    $('#btnLimparFiltros').click(function() {
-        $('.select2').val(null).trigger('change');
-        $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
-        $('#formFiltros').submit();
-    });
-});
 </script>
 {% endblock %}

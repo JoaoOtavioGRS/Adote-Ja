@@ -7,7 +7,7 @@ from PIL import Image, UnidentifiedImageError
 from datetime import datetime, timedelta
 import pytz
 import os, json
-
+from werkzeug.exceptions import RequestEntityTooLarge
 
 EXTENSOES_PIL = {
     'jpg': 'JPEG',
@@ -22,6 +22,14 @@ EXTENSOES_PIL = {
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
+# Limite máximo de upload: 2 MB (ajuste conforme desejar)
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB
+
+# Aqui você cola o tratamento do erro
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(error):
+    flash('O arquivo é muito grande. O limite é de 2MB.', 'danger')
+    return redirect(request.url)
 
 # Caminho para a pasta data
 DATA_DIR = os.path.abspath(os.path.join(app.root_path, 'data'))
@@ -31,7 +39,7 @@ CIDADES_DIR = os.path.join(DATA_DIR, 'cidades')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/adote_ja'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Pasta para uploads
+# Pastas para uploads
 app.config['UPLOAD_FOLDER_USUARIO'] = os.path.join('static', 'fotos_perfil')
 os.makedirs(app.config['UPLOAD_FOLDER_USUARIO'], exist_ok=True)
 app.config['UPLOAD_FOLDER_ANIMAL'] = os.path.join('static', 'uploads/img_animais/')
@@ -42,6 +50,7 @@ db = SQLAlchemy(app)
 def agora_sp():
     return datetime.utcnow() + timedelta(hours=-3)
 
+
 # MODELOS
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
@@ -50,15 +59,16 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     telefone = db.Column(db.String(20))
     senha = db.Column(db.String(200), nullable=False)
-    foto = db.Column(db.String(200))  # caminho foto opcional
+    foto = db.Column(db.String(200))
     animais = db.relationship('Animal', backref='usuario', lazy=True)
     estado = db.Column(db.String(2))
     cidade = db.Column(db.String(100))
 
+
 class Animal(db.Model):
     __tablename__ = 'animais'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # Chave estrangeira
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     nome = db.Column(db.String(100), nullable=False)
     especie = db.Column(db.String(50), nullable=False)
     raca = db.Column(db.String(50))
@@ -66,34 +76,27 @@ class Animal(db.Model):
     vacinado = db.Column(db.Integer, default=2)
     castrado = db.Column(db.Integer, default=2)
     foto = db.Column(db.String(200))
-    estado = db.Column(db.String(50))   # Herdado do usuário
-    cidade = db.Column(db.String(50))   # Herdado do usuário
-    criado_em = db.Column(db.DateTime, default=agora_sp)  # função chamada automaticamente
-    ativo = db.Column(db.Boolean, default=True)  # NOVO: controla se o anúncio está ativo
-    data_validade = db.Column(db.DateTime, default=lambda: agora_sp() + timedelta(days=30))  #
+    estado = db.Column(db.String(50))
+    cidade = db.Column(db.String(50))
+    criado_em = db.Column(db.DateTime, default=agora_sp)
+    ativo = db.Column(db.Boolean, default=True)
+    data_validade = db.Column(db.DateTime, default=lambda: agora_sp() + timedelta(days=30))
 
 
+# Funções utilitárias
 def inativar_animais_vencidos():
-    # Define fuso horário de São Paulo
     sp_tz = pytz.timezone('America/Sao_Paulo')
     hoje = datetime.now(sp_tz)
-
-    # Pega todos os animais ativos cuja data_validade já passou
-    animais_expirados = Animal.query.filter(
-        Animal.ativo == True,
-        Animal.data_validade <= hoje
-    ).all()
-
+    animais_expirados = Animal.query.filter(Animal.ativo == True, Animal.data_validade <= hoje).all()
     houve_alteracao = False
     for animal in animais_expirados:
         animal.ativo = False
         houve_alteracao = True
         print(f"Inativado: {animal.nome} (ID {animal.id})")
-
     if houve_alteracao:
         db.session.commit()
 
-# Função para carregar cidades de um estado específico
+
 def carregar_cidades(estado_sigla):
     caminho = os.path.join(DATA_DIR, f'{estado_sigla}.json')
     if os.path.exists(caminho):
@@ -101,34 +104,37 @@ def carregar_cidades(estado_sigla):
             return json.load(f)
     return []
 
-# ROTAS
 
-# ROTA PARA FORMATAR NUMERO PARA WHATSAPP
+# FILTROS
 @app.template_filter('formatar_telefone_whatsapp')
 def formatar_telefone_whatsapp(telefone):
     if not telefone:
         return ''
     numeros = re.sub(r'\D', '', telefone)
-    if numeros.startswith('55'):  # remove o DDI para formatar visualmente
+    if numeros.startswith('55'):
         numeros = numeros[2:]
-    if len(numeros) == 11:  # celular com DDD
+    if len(numeros) == 11:
         return f"({numeros[:2]}) {numeros[2:7]}-{numeros[7:]}"
-    elif len(numeros) == 10:  # fixo com DDD
+    elif len(numeros) == 10:
         return f"({numeros[:2]}) {numeros[2:6]}-{numeros[6:]}"
     return numeros
 
-# Rota para cadastro de usuário, com foto opcional
+
+# ROTAS
+
 @app.route('/cadastrar', methods=['GET', 'POST'])
 def cadastrar():
     if request.method == 'POST':
         nome = request.form.get('nome')
         email = request.form.get('email')
         telefone = request.form.get('telefone')
-        concordo_telefone = request.form.get('concordo')  # <--- novo
+        concordo_telefone = request.form.get('concordo')
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
         estado = request.form.get('estado')
         cidade = request.form.get('cidade')
+
+        concordo_telefone = request.form.get('concordo')  # "1" se marcado, None se não
 
         if senha != confirmar_senha:
             flash('As senhas não coincidem.', 'danger')
@@ -142,7 +148,6 @@ def cadastrar():
             flash('Para cadastrar o telefone é necessário concordar que ele será público.', 'danger')
             return redirect(url_for('cadastrar'))
 
-        # Criptografar senha
         senha_criptografada = generate_password_hash(senha)
 
         # Foto (opcional)
@@ -153,7 +158,6 @@ def cadastrar():
             caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
             foto.save(caminho_foto)
 
-        # Criar usuário e salvar no banco
         usuario = Usuario(
             nome=nome,
             email=email,
@@ -165,11 +169,10 @@ def cadastrar():
         )
         db.session.add(usuario)
         db.session.commit()
-
         flash('Usuário cadastrado com sucesso!', 'success')
         return redirect(url_for('login'))
 
-    # ====== GET ====== Carregar ESTADOS e CIDADES ======
+    # GET
     estados_path = os.path.join(DATA_DIR, 'estados.json')
     with open(estados_path, 'r', encoding='utf-8') as f:
         estados_lista = json.load(f)['estados']
@@ -198,7 +201,7 @@ def cadastrar():
         cidades_por_estado=cidades_por_estado
     )
 
-# Rota de login
+# ROTAS DE LOGIN E LOGOUT
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -208,30 +211,28 @@ def login():
         if usuario and check_password_hash(usuario.senha, senha):
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
-            # 🔥 Adiciona a foto do usuário na sessão
             session['usuario_foto'] = usuario.foto if usuario.foto else None
-
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home'))
         else:
             flash('E-mail ou senha inválidos.', 'danger')
     return render_template('login.html')
 
-# Logout
+
 @app.route('/logout')
 def logout():
     session.clear()
     flash('Você saiu do sistema.', 'info')
     return redirect(url_for('login'))
 
-# Página inicial
+
 @app.route('/')
 def home():
     if 'usuario_id' in session:
         return render_template('home.html')
     return redirect(url_for('login'))
 
-# Perfil do usuário
+
 @app.route('/perfil')
 def perfil():
     if 'usuario_id' not in session:
@@ -239,8 +240,7 @@ def perfil():
     usuario = Usuario.query.get(session['usuario_id'])
     return render_template('perfil.html', usuario=usuario)
 
-# Editar perfil
-# Editar perfil
+# EDITAR PERFIL
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 def editar_perfil():
     if 'usuario_id' not in session:
@@ -272,7 +272,7 @@ def editar_perfil():
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
     estados_lista.sort(key=lambda e: e['estado'].lower())
 
-    erros = {}  # Dicionário para armazenar erros
+    erros = {}
 
     if request.method == 'POST':
         usuario.nome = request.form['nome']
@@ -281,7 +281,6 @@ def editar_perfil():
         telefone = (request.form.get('telefone') or '').strip()
         concordo_telefone = request.form.get('concordo_telefone')
 
-        # Se informou telefone mas não marcou o checkbox → erro
         if telefone:
             if not concordo_telefone:
                 flash('Para cadastrar o Telefone é necessário concordar que ele será público.', 'danger')
@@ -314,16 +313,13 @@ def editar_perfil():
             if not confirmar_senha:
                 erros['confirmar_senha'] = "Confirme a nova senha."
 
-            # Validar senha atual
             if senha_atual and not check_password_hash(usuario.senha, senha_atual):
                 erros['senha_atual'] = "Senha atual incorreta."
 
-            # Validar confirmação
             if nova_senha and confirmar_senha and nova_senha != confirmar_senha:
                 erros['nova_senha'] = "Nova senha e confirmação não coincidem."
                 erros['confirmar_senha'] = "Nova senha e confirmação não coincidem."
 
-            # Se não houver erros, atualiza a senha
             if not erros and nova_senha:
                 usuario.senha = generate_password_hash(nova_senha)
 
@@ -358,7 +354,7 @@ def editar_perfil():
     )
 
 
-# Cadastrar ou editar animal
+# CADASTRAR OU EDITAR ANIMAL
 @app.route('/animal', methods=['GET', 'POST'])
 @app.route('/animal/<int:id>', methods=['GET', 'POST'])
 def cadastrar_ou_editar_animal(id=None):
@@ -426,12 +422,13 @@ def cadastrar_ou_editar_animal(id=None):
 
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
+
+# LISTAR ANIMAIS
 @app.route('/listar_animais')
 def listar_animais():
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
 
-    # Pegando filtros enviados pela URL (GET)
     especie = request.args.get('especie')
     raca = request.args.get('raca')
     sexo = request.args.get('sexo')
@@ -440,7 +437,6 @@ def listar_animais():
     estado = request.args.get('estado')
     cidade = request.args.get('cidade')
 
-    # Faz join com Usuario para pegar cidade e estado
     query = Animal.query.join(Usuario)
 
     if especie and especie.strip():
@@ -460,7 +456,6 @@ def listar_animais():
 
     animais = query.filter(Animal.ativo == True).order_by(Animal.criado_em.desc()).all()
 
-    # ===== Carregar apenas cidades que possuem animais ativos =====
     cidades_query = db.session.query(Usuario.estado, Usuario.cidade) \
         .join(Animal) \
         .filter(Animal.ativo == True) \
@@ -472,22 +467,17 @@ def listar_animais():
         if uf and cidade_nome:
             cidades_por_estado.setdefault(uf, []).append(cidade_nome)
 
-    # Ordenar cidades
     for uf in cidades_por_estado:
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
 
-    # ===== Filtrar estados que possuem animais =====
     estados_lista = []
     for e in json.load(open(os.path.join(DATA_DIR, 'estados.json'), encoding='utf-8'))['estados']:
-        if e['id'] in cidades_por_estado:  # só adiciona estados com cidades ativas
+        if e['id'] in cidades_por_estado:
             estados_lista.append(e)
-
     estados_lista.sort(key=lambda e: e['estado'].lower())
 
-    # ===== Calcular dias para expiração e inativar se necessário =====
     houve_alteracao = False
     agora = agora_sp()
-
     for animal in animais:
         if not animal.data_validade or animal.data_validade < animal.criado_em:
             animal.data_validade = animal.criado_em + timedelta(days=30)
@@ -502,7 +492,6 @@ def listar_animais():
     if houve_alteracao:
         db.session.commit()
 
-    # Filtra apenas ativos para listagem
     animais_ativos = [a for a in animais if a.ativo]
 
     return render_template(
@@ -514,23 +503,23 @@ def listar_animais():
         cidades_por_estado=cidades_por_estado
     )
 
+# PERFIL DE OUTRO USUÁRIO (DOADOR)
 @app.route('/perfil_doador/<int:usuario_id>')
 def perfil_doador(usuario_id):
     usuario = Usuario.query.get_or_404(usuario_id)
     return render_template('perfil_doador.html', usuario=usuario)
 
 
+# MEUS ANÚNCIOS
 @app.route('/meus_anuncios')
 def meus_anuncios():
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
 
     usuario_id = session['usuario_id']
-
-    # Pega todos os animais do usuário logado
     animais = Animal.query.filter_by(usuario_id=usuario_id).order_by(Animal.criado_em.desc()).all()
 
-    # ===== Carregar estados e cidades dos JSON =====
+    # ===== Carregar estados e cidades =====
     estados_path = os.path.join(DATA_DIR, 'estados.json')
     with open(estados_path, 'r', encoding='utf-8') as f:
         estados_lista = json.load(f)['estados']
@@ -548,11 +537,12 @@ def meus_anuncios():
                         nome = item.get('cidade')
                         if uf and nome:
                             cidades_por_estado.setdefault(uf, []).append(nome)
+
     for uf in cidades_por_estado:
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
     estados_lista.sort(key=lambda e: e['estado'].lower())
 
-    # ===== Calcular dias para expiração e separar ativos/inativos =====
+    # ===== Separar ativos e inativos =====
     ativos = []
     inativos = []
     houve_alteracao = False
@@ -563,10 +553,8 @@ def meus_anuncios():
             animal.data_validade = animal.criado_em + timedelta(days=30)
             houve_alteracao = True
 
-        # Dias restantes até expiração (pode ser negativo se já passou)
         animal.dias_para_exclusao = (animal.data_validade - agora).days
 
-        # Inativa automaticamente se já passou da data de validade
         if animal.ativo and animal.data_validade <= agora:
             animal.ativo = False
             houve_alteracao = True
@@ -591,6 +579,7 @@ def meus_anuncios():
     )
 
 
+# REATIVAR ANIMAL
 @app.route('/reativar_animal/<int:id>', methods=['POST'])
 def reativar_animal(id):
     animal = Animal.query.get_or_404(id)
@@ -600,18 +589,18 @@ def reativar_animal(id):
         return redirect(url_for('meus_anuncios'))
 
     animal.ativo = True
-    animal.data_validade = agora_sp() + timedelta(days=30)  # renova validade
+    animal.data_validade = agora_sp() + timedelta(days=30)
     db.session.commit()
 
     flash('Anúncio reativado com sucesso! 🐾', 'success')
     return redirect(url_for('meus_anuncios'))
 
 
+# EXCLUIR ANIMAL
 @app.route('/excluir_animal/<int:id>', methods=['POST'])
 def excluir_animal(id):
     animal = Animal.query.get_or_404(id)
 
-    # Só permite excluir se o dono for o usuário logado
     if animal.usuario_id != session['usuario_id']:
         flash('Você não tem permissão para excluir este animal.', 'danger')
         return redirect(url_for('meus_anuncios'))
@@ -620,10 +609,10 @@ def excluir_animal(id):
     db.session.commit()
     flash('Animal excluído com sucesso!', 'success')
 
-    # Redireciona para a tela que enviou o formulário (padrão: meus_anuncios)
     next_url = request.form.get('next')
     return redirect(next_url or url_for('meus_anuncios'))
 
 
+# RODAR APLICATIVO
 if __name__ == '__main__':
     app.run(debug=True)

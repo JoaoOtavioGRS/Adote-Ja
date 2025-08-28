@@ -1,21 +1,27 @@
 {% extends "base.html" %}
+
 {% block title %}Login{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <h1 class="mb-4 text-center">Login</h1>
+
     <form method="POST" class="mx-auto" style="max-width: 400px;">
         <div class="mb-3">
             <label for="email" class="form-label">E-mail:</label>
             <input type="email" class="form-control" name="email" required>
         </div>
+
         <div class="mb-3">
             <label for="senha" class="form-label">Senha:</label>
             <input type="password" class="form-control" name="senha" required>
         </div>
+
         <div class="d-grid">
             <button type="submit" class="btn btn-success">Entrar</button>
         </div>
     </form>
+
     <div class="text-center mt-3">
         <a href="{{ url_for('cadastrar') }}" class="btn btn-secondary">Cadastrar</a>
     </div>

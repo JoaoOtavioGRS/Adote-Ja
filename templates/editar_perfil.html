@@ -32,34 +32,32 @@
                 <label for="senha_atual" class="form-label">Senha Atual:</label>
                 <input type="password" class="form-control" id="senha_atual" name="senha_atual">
             </div>
-
             <div class="mb-3">
                 <label for="nova_senha" class="form-label">Nova Senha:</label>
                 <input type="password" class="form-control" id="nova_senha" name="nova_senha">
             </div>
-
             <div class="mb-3">
                 <label for="confirmar_senha" class="form-label">Confirmar Nova Senha:</label>
                 <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha">
             </div>
         </div>
 
-            <!-- Telefone -->
-            <div class="mb-3">
-                <label for="telefone" class="form-label">Telefone</label>
-                <input type="text" class="form-control" id="telefone" name="telefone"
-                       value="{{ usuario.telefone if usuario.telefone else '' }}"
-                       placeholder="{{ '(opcional)' if not usuario.telefone else '' }}">
+        <!-- Telefone -->
+        <div class="mb-3">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="text" class="form-control" id="telefone" name="telefone"
+                   value="{{ usuario.telefone if usuario.telefone else '' }}"
+                   placeholder="{{ '(opcional)' if not usuario.telefone else '' }}">
 
-                <!-- Caixa de concordância (aparece se tiver telefone preenchido) -->
-                <div id="concordo-container" class="form-check mt-2" style="display: none;">
-                    <input class="form-check-input" type="checkbox" id="concordo_telefone" name="concordo_telefone"
-                           {% if usuario.telefone %}checked{% endif %}>
-                    <label class="form-check-label" for="concordo_telefone">
-                        Concordo que o número de telefone será público
-                    </label>
-                </div>
+            <!-- Caixa de concordância (aparece se tiver telefone preenchido) -->
+            <div id="concordo-container" class="form-check mt-2" style="display: none;">
+                <input class="form-check-input" type="checkbox" id="concordo_telefone" name="concordo_telefone"
+                       {% if usuario.telefone %}checked{% endif %}>
+                <label class="form-check-label" for="concordo_telefone">
+                    Concordo que o número de telefone será público
+                </label>
             </div>
+        </div>
 
         <!-- Estado -->
         <div class="mb-3">
@@ -79,7 +77,6 @@
             <label for="cidade" class="form-label">Cidade:</label>
             <select class="form-select" id="cidade" name="cidade" required>
                 <option value="">Selecione uma cidade</option>
-                {# Pré-render das cidades do estado atual para já aparecer selecionado #}
                 {% if cidades_iniciais %}
                     {% for c in cidades_iniciais %}
                         <option value="{{ c }}" {% if usuario.cidade == c %}selected{% endif %}>{{ c }}</option>
@@ -94,6 +91,7 @@
             <input type="file" class="form-control" id="foto" name="foto">
         </div>
 
+        <!-- Exibe foto atual ou ícone -->
         <div class="text-left mt-3 mb-3">
             {% if usuario.foto and usuario.foto != 'None' and usuario.foto != '' %}
                 <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}"
@@ -116,7 +114,6 @@
 
 <!-- Script para popular cidades dinamicamente ao trocar o estado -->
 <script>
-    // Mapa { "UF": ["Cidade1", "Cidade2", ...] } vindo do backend
     const cidadesPorEstado = {{ cidades_por_estado | tojson | safe }};
     const estadoSelect = document.getElementById('estado');
     const cidadeSelect = document.getElementById('cidade');
@@ -135,21 +132,20 @@
         }
     }
 
-    // Quando muda o estado no select
     estadoSelect.addEventListener('change', function () {
         preencherCidades(this.value);
     });
 
-    // Caso queira garantir que, ao carregar, reforce as cidades do estado atual:
     document.addEventListener('DOMContentLoaded', function () {
         const ufAtual = estadoSelect.value;
         if (ufAtual) preencherCidades(ufAtual);
     });
 </script>
 
+<!-- Script para mostrar/esconder campos de senha -->
 <script>
     document.getElementById("btn_alterar_senha").addEventListener("click", function() {
-        let camposSenha = document.getElementById("campos_senha");
+        const camposSenha = document.getElementById("campos_senha");
         if (camposSenha.style.display === "none") {
             camposSenha.style.display = "block";
             this.innerText = "Cancelar Alteração de Senha";
@@ -166,24 +162,22 @@
 
 <!-- Script para telefone/checkbox -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const telefoneInput = document.getElementById("telefone");
-    const concordoContainer = document.getElementById("concordo-container");
-    const concordoCheckbox = document.getElementById("concordo_telefone");
+    document.addEventListener("DOMContentLoaded", function () {
+        const telefoneInput = document.getElementById("telefone");
+        const concordoContainer = document.getElementById("concordo-container");
+        const concordoCheckbox = document.getElementById("concordo_telefone");
 
-    function toggleConcordo() {
-        if (telefoneInput.value.trim() !== "") {
-            concordoContainer.style.display = "block";
-        } else {
-            concordoContainer.style.display = "none";
-            concordoCheckbox.checked = false; // reseta caso apague o telefone
+        function toggleConcordo() {
+            if (telefoneInput.value.trim() !== "") {
+                concordoContainer.style.display = "block";
+            } else {
+                concordoContainer.style.display = "none";
+                concordoCheckbox.checked = false;
+            }
         }
-    }
 
-    // já mostra se o usuário já tinha telefone salvo
-    toggleConcordo();
-
-    telefoneInput.addEventListener("input", toggleConcordo);
-});
+        toggleConcordo();
+        telefoneInput.addEventListener("input", toggleConcordo);
+    });
 </script>
 {% endblock %}

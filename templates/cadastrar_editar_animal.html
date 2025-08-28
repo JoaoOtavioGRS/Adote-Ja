@@ -13,7 +13,7 @@
             <div class="card-body">
                 <h5 class="mb-1 text-info">Obrigado por ajudar um pet a encontrar um lar ❤️ </h5>
                 <p class="mb-0">
-                    Todos os anúncios são removidos automaticamente após <strong>30 dias</strong>.<br>
+                    Todos os anúncios são inativados automaticamente após <strong>30 dias</strong>.<br>
                     Caso o pet seja adotado antes desse prazo, você pode <strong>excluir o anúncio manualmente</strong>.
                 </p>
             </div>
@@ -22,11 +22,14 @@
 
     <form method="POST" enctype="multipart/form-data" class="row g-3"
           action="{{ url_for('cadastrar_ou_editar_animal', id=animal.id if animal else None) }}">
+
+        <!-- Nome -->
         <div class="col-md-6">
             <label for="nome" class="form-label">Nome:</label>
             <input type="text" class="form-control" name="nome" value="{{ animal.nome if animal else '' }}" required>
         </div>
 
+        <!-- Espécie -->
         <div class="col-md-6">
             <label for="especie" class="form-label">Espécie:</label>
             <select class="form-select select2" name="especie" id="especie" required>
@@ -36,11 +39,13 @@
             </select>
         </div>
 
+        <!-- Raça -->
         <div class="col-md-6">
             <label for="raca" class="form-label">Raça:</label>
             <select class="form-select select2" name="raca" id="raca" required></select>
         </div>
 
+        <!-- Sexo -->
         <div class="col-md-6">
             <label for="sexo" class="form-label">Sexo:</label>
             <select class="form-select select2" name="sexo" required>
@@ -50,35 +55,39 @@
             </select>
         </div>
 
-                <div class="col-md-6">
-                    <label for="vacinado" class="form-label">Vacinado:</label>
-                    <select class="form-select select2" name="vacinado" required>
-                        <option value="2" {% if (animal and animal.vacinado == 2) or not animal %}selected{% endif %}>Não sei</option>
-                        <option value="0" {% if animal and animal.vacinado == 0 %}selected{% endif %}>Sim</option>
-                        <option value="1" {% if animal and animal.vacinado == 1 %}selected{% endif %}>Não</option>
-                    </select>
-                </div>
+        <!-- Vacinado -->
+        <div class="col-md-6">
+            <label for="vacinado" class="form-label">Vacinado:</label>
+            <select class="form-select select2" name="vacinado" required>
+                <option value="2" {% if (animal and animal.vacinado == 2) or not animal %}selected{% endif %}>Não sei</option>
+                <option value="0" {% if animal and animal.vacinado == 0 %}selected{% endif %}>Sim</option>
+                <option value="1" {% if animal and animal.vacinado == 1 %}selected{% endif %}>Não</option>
+            </select>
+        </div>
 
-                <div class="col-md-6">
-                    <label for="castrado" class="form-label">Castrado:</label>
-                    <select class="form-select select2" name="castrado" required>
-                        <option value="2" {% if (animal and animal.castrado == 2) or not animal %}selected{% endif %}>Selecione</option>
-                        <option value="0" {% if animal and animal.castrado == 0 %}selected{% endif %}>Sim</option>
-                        <option value="1" {% if animal and animal.castrado == 1 %}selected{% endif %}>Não</option>
-                    </select>
-                </div>
+        <!-- Castrado -->
+        <div class="col-md-6">
+            <label for="castrado" class="form-label">Castrado:</label>
+            <select class="form-select select2" name="castrado" required>
+                <option value="2" {% if (animal and animal.castrado == 2) or not animal %}selected{% endif %}>Selecione</option>
+                <option value="0" {% if animal and animal.castrado == 0 %}selected{% endif %}>Sim</option>
+                <option value="1" {% if animal and animal.castrado == 1 %}selected{% endif %}>Não</option>
+            </select>
+        </div>
 
-
+        <!-- Foto do Animal -->
         <div class="col-md-6">
             <label for="foto" class="form-label">Foto do Animal:</label>
             {% if animal and animal.foto %}
                 <div class="mb-2">
-                    <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) }}" alt="Foto do animal" class="img-thumbnail" style="max-width: 150px;">
+                    <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) }}"
+                         alt="Foto do animal" class="img-thumbnail" style="max-width: 150px;">
                 </div>
             {% endif %}
             <input type="file" class="form-control" name="foto" accept="image/*">
         </div>
 
+        <!-- Botão -->
         <div class="col-12 d-grid">
             <button type="submit" class="btn btn-{{ 'primary' if animal else 'success' }}">
                 {{ 'Salvar Alterações' if animal else 'Cadastrar' }}
@@ -109,14 +118,14 @@
         const especie = document.getElementById("especie").value;
         const racaSelect = document.getElementById("raca");
 
-        // limpa opções
+        // Limpa opções
         racaSelect.innerHTML = "";
 
         let racas = [];
         if (especie === "Cachorro") racas = racas_cachorro;
         else if (especie === "Gato") racas = racas_gato;
 
-        // popula opções
+        // Popula opções
         racas.forEach(raca => {
             const option = document.createElement("option");
             option.value = raca;
@@ -124,7 +133,7 @@
             racaSelect.appendChild(option);
         });
 
-        // seleciona a raça atual ou adiciona se não estiver na lista
+        // Seleciona a raça atual ou adiciona se não estiver na lista
         if (racaAtual) {
             if (!racas.includes(racaAtual)) {
                 const option = document.createElement("option");
@@ -151,6 +160,5 @@
             });
         }
     });
-
 </script>
 {% endblock %}

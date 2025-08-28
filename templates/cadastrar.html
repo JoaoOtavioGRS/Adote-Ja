@@ -5,101 +5,112 @@
 <h1 class="mb-4 text-center">Cadastrar Usuário</h1>
 
 <form method="POST" enctype="multipart/form-data" class="mx-auto" style="max-width: 400px;">
+    <!-- Nome -->
     <div class="mb-3">
         <label class="form-label">Nome:</label>
         <input type="text" name="nome" class="form-control" required />
     </div>
+
+    <!-- E-mail -->
     <div class="mb-3">
         <label class="form-label">E-mail:</label>
         <input type="email" name="email" class="form-control" required />
     </div>
-       <div class="mb-3">
-    <label class="form-label">Senha:</label>
-    <input type="password" id="senha" name="senha" class="form-control" required>
-</div>
-<div class="mb-3">
-    <label class="form-label">Confirmar Senha:</label>
-    <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" required>
-    <small id="msg-senha" class="text-danger"></small>
-</div>
 
-<script>
-    const senha = document.getElementById("senha");
-    const confirmarSenha = document.getElementById("confirmar_senha");
-    const msg = document.getElementById("msg-senha");
-
-    function validarSenha() {
-        if (confirmarSenha.value && senha.value !== confirmarSenha.value) {
-            msg.textContent = "As senhas não coincidem.";
-            confirmarSenha.classList.add("is-invalid");
-        } else {
-            msg.textContent = "";
-            confirmarSenha.classList.remove("is-invalid");
-        }
-    }
-
-    senha.addEventListener("input", validarSenha);
-    confirmarSenha.addEventListener("input", validarSenha);
-</script>
+    <!-- Senha -->
     <div class="mb-3">
-            <label for="telefone" class="form-label">Telefone</label>
-            <input type="text" class="form-control" id="telefone" name="telefone" placeholder="(opcional)">
-
-            <!-- checkbox escondido inicialmente -->
-            <div class="form-check mt-2 d-none" id="concordoDiv">
-                <input class="form-check-input" type="checkbox" id="concordo">
-                <label class="form-check-label" for="concordo">
-                    Concordo que meu número de telefone será <strong>público</strong>
-                </label>
-            </div>
+        <label class="form-label">Senha:</label>
+        <input type="password" id="senha" name="senha" class="form-control" required>
     </div>
-   <!-- Estado -->
-<!-- Estado -->
-<div class="mb-3">
-    <label for="estado" class="form-label">Estado:</label>
-    <select class="form-select" id="estado" name="estado" required>
-        <option value="">Selecione um estado</option>
-        {% for estado in estados %}
-            <option value="{{ estado.id }}">{{ estado.estado }}</option>
-        {% endfor %}
-    </select>
-</div>
 
-<!-- Cidade -->
-<div class="mb-3">
-    <label for="cidade" class="form-label">Cidade:</label>
-    <select class="form-select" id="cidade" name="cidade" required>
-        <option value="">Selecione uma cidade</option>
-    </select>
-</div>
+    <!-- Confirmar Senha -->
+    <div class="mb-3">
+        <label class="form-label">Confirmar Senha:</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" required>
+        <small id="msg-senha" class="text-danger"></small>
+    </div>
 
-<script>
-    const cidadesPorEstado = {{ cidades_por_estado | tojson }};
-    const estadoSelect = document.getElementById('estado');
-    const cidadeSelect = document.getElementById('cidade');
+    <script>
+        const senha = document.getElementById("senha");
+        const confirmarSenha = document.getElementById("confirmar_senha");
+        const msg = document.getElementById("msg-senha");
 
-    estadoSelect.addEventListener('change', function() {
-        const uf = this.value;
-        cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
-        if (uf && cidadesPorEstado[uf]) {
-            cidadesPorEstado[uf].forEach(function(cidade) {
-                const option = document.createElement('option');
-                option.value = cidade;
-                option.text = cidade;
-                cidadeSelect.appendChild(option);
-            });
+        function validarSenha() {
+            if (confirmarSenha.value && senha.value !== confirmarSenha.value) {
+                msg.textContent = "As senhas não coincidem.";
+                confirmarSenha.classList.add("is-invalid");
+            } else {
+                msg.textContent = "";
+                confirmarSenha.classList.remove("is-invalid");
+            }
         }
-    });
-</script>
+
+        senha.addEventListener("input", validarSenha);
+        confirmarSenha.addEventListener("input", validarSenha);
+    </script>
+
+    <!-- Telefone -->
+    <div class="mb-3">
+        <label for="telefone" class="form-label">Telefone</label>
+        <input type="text" class="form-control" id="telefone" name="telefone" placeholder="(opcional)">
+
+    <!-- Checkbox escondido inicialmente -->
+    <div class="form-check mt-2 d-none" id="concordoDiv">
+        <input class="form-check-input" type="checkbox" id="concordo" name="concordo" value="1">
+        <label class="form-check-label" for="concordo">
+            Concordo que meu número de telefone será <strong>público</strong>
+        </label>
+    </div>
+
+    <!-- Estado -->
+    <div class="mb-3">
+        <label for="estado" class="form-label">Estado:</label>
+        <select class="form-select" id="estado" name="estado" required>
+            <option value="">Selecione um estado</option>
+            {% for estado in estados %}
+                <option value="{{ estado.id }}">{{ estado.estado }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Cidade -->
+    <div class="mb-3">
+        <label for="cidade" class="form-label">Cidade:</label>
+        <select class="form-select" id="cidade" name="cidade" required>
+            <option value="">Selecione uma cidade</option>
+        </select>
+    </div>
+
+    <script>
+        const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+        const estadoSelect = document.getElementById('estado');
+        const cidadeSelect = document.getElementById('cidade');
+
+        estadoSelect.addEventListener('change', function() {
+            const uf = this.value;
+            cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+            if (uf && cidadesPorEstado[uf]) {
+                cidadesPorEstado[uf].forEach(function(cidade) {
+                    const option = document.createElement('option');
+                    option.value = cidade;
+                    option.text = cidade;
+                    cidadeSelect.appendChild(option);
+                });
+            }
+        });
+    </script>
+
+    <!-- Foto do Perfil -->
     <div class="mb-3">
         <label class="form-label">Foto do Perfil (opcional):</label>
         <input type="file" name="foto" class="form-control" accept="image/*" />
     </div>
 
-<!-- Botão com ID para JS -->
-<button type="submit" class="btn btn-success w-100" id="btnCadastrar">Cadastrar</button>
+    <!-- Botão Cadastrar -->
+    <button type="submit" class="btn btn-success w-100" id="btnCadastrar">Cadastrar</button>
 </form>
 
+<!-- Script de visibilidade do checkbox de telefone -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const telefone = document.getElementById("telefone");
@@ -126,33 +137,4 @@
         atualizarVisibilidade(); // inicializa
     });
 </script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const telefone = document.getElementById("telefone");
-    const concordoDiv = document.getElementById("concordoDiv");
-    const concordo = document.getElementById("concordo");
-    const btnCadastrar = document.getElementById("btnCadastrar");
-
-    function atualizarVisibilidade() {
-        if (telefone.value.trim() !== "") {
-            // mostra checkbox e exige marcar
-            concordoDiv.classList.remove("d-none");
-            btnCadastrar.disabled = !concordo.checked;
-        } else {
-            // esconde checkbox se não digitou telefone
-            concordoDiv.classList.add("d-none");
-            btnCadastrar.disabled = false;
-            concordo.checked = false;
-        }
-    }
-
-    telefone.addEventListener("input", atualizarVisibilidade);
-    concordo.addEventListener("change", atualizarVisibilidade);
-
-    atualizarVisibilidade(); // inicializa
-});
-</script>
-
 {% endblock %}
-
