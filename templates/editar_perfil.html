@@ -44,11 +44,22 @@
             </div>
         </div>
 
-        <!-- Telefone -->
-        <div class="mb-3">
-            <label for="telefone" class="form-label">Telefone:</label>
-            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone | formatar_telefone_whatsapp }}" required>
-        </div>
+            <!-- Telefone -->
+            <div class="mb-3">
+                <label for="telefone" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="telefone" name="telefone"
+                       value="{{ usuario.telefone if usuario.telefone else '' }}"
+                       placeholder="{{ '(opcional)' if not usuario.telefone else '' }}">
+
+                <!-- Caixa de concordância (aparece se tiver telefone preenchido) -->
+                <div id="concordo-container" class="form-check mt-2" style="display: none;">
+                    <input class="form-check-input" type="checkbox" id="concordo_telefone" name="concordo_telefone"
+                           {% if usuario.telefone %}checked{% endif %}>
+                    <label class="form-check-label" for="concordo_telefone">
+                        Concordo que o número de telefone será público
+                    </label>
+                </div>
+            </div>
 
         <!-- Estado -->
         <div class="mb-3">
@@ -151,5 +162,28 @@
             this.classList.add("btn-warning");
         }
     });
+</script>
+
+<!-- Script para telefone/checkbox -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const telefoneInput = document.getElementById("telefone");
+    const concordoContainer = document.getElementById("concordo-container");
+    const concordoCheckbox = document.getElementById("concordo_telefone");
+
+    function toggleConcordo() {
+        if (telefoneInput.value.trim() !== "") {
+            concordoContainer.style.display = "block";
+        } else {
+            concordoContainer.style.display = "none";
+            concordoCheckbox.checked = false; // reseta caso apague o telefone
+        }
+    }
+
+    // já mostra se o usuário já tinha telefone salvo
+    toggleConcordo();
+
+    telefoneInput.addEventListener("input", toggleConcordo);
+});
 </script>
 {% endblock %}

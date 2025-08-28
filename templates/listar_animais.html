@@ -161,19 +161,24 @@
                         </span>
                     </div>
                    <div class="col d-flex align-items-center">
+                       {% if animal.usuario.telefone %}
                         <i class="fas fa-phone me-2 text-muted"></i>
-                        <strong>Contato:</strong>&nbsp;
-                        {% if animal.usuario.telefone %}
-                            <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}"
-                               target="_blank"
-                               class="btn btn-success btn-sm py-0 px-2"
-                               title="Clique para abrir no WhatsApp">
-                                <i class="fab fa-whatsapp"></i>
-                                Whatsapp
-                            </a>
-                        {% else %}
-                            Não informado
-                        {% endif %}
+                    {% else %}
+                        <i class="fas fa-envelope me-2 text-muted"></i>
+                    {% endif %}
+                    <strong>Contato:</strong>&nbsp;
+
+                    {% if animal.usuario.telefone %}
+                        <a href="https://wa.me/{{ animal.usuario.telefone | replace(' ', '') | replace('(', '') | replace(')', '') | replace('-', '') }}"
+                           target="_blank"
+                           class="btn btn-success btn-sm py-0 px-2"
+                           title="Clique para abrir no WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                            Whatsapp
+                        </a>
+                    {% else %}
+                        <a href="mailto:{{ animal.usuario.email }}" class="text-muted">{{ animal.usuario.email }}</a>
+                    {% endif %}
                     </div>
                 </div>
 
@@ -270,5 +275,29 @@
 const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
+
+    $(document).ready(function() {
+    $('.select2').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        language: {
+            noResults: function() {
+                return "Nenhum resultado encontrado";
+            }
+        }
+    });
+
+    $('#especie').on('change', atualizarRacas);
+    $('#estado').on('change', atualizarCidades);
+
+    atualizarRacas();
+    atualizarCidades();
+
+    $('#btnLimparFiltros').click(function() {
+        $('.select2').val(null).trigger('change');
+        $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
+        $('#formFiltros').submit();
+    });
+});
 </script>
 {% endblock %}

@@ -42,8 +42,16 @@
     confirmarSenha.addEventListener("input", validarSenha);
 </script>
     <div class="mb-3">
-        <label class="form-label">Telefone:</label>
-        <input type="text" name="telefone" class="form-control" />
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="text" class="form-control" id="telefone" name="telefone" placeholder="(opcional)">
+
+            <!-- checkbox escondido inicialmente -->
+            <div class="form-check mt-2 d-none" id="concordoDiv">
+                <input class="form-check-input" type="checkbox" id="concordo">
+                <label class="form-check-label" for="concordo">
+                    Concordo que meu número de telefone será <strong>público</strong>
+                </label>
+            </div>
     </div>
    <!-- Estado -->
 <!-- Estado -->
@@ -87,6 +95,64 @@
         <label class="form-label">Foto do Perfil (opcional):</label>
         <input type="file" name="foto" class="form-control" accept="image/*" />
     </div>
-    <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+
+<!-- Botão com ID para JS -->
+<button type="submit" class="btn btn-success w-100" id="btnCadastrar">Cadastrar</button>
 </form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const telefone = document.getElementById("telefone");
+        const concordoDiv = document.getElementById("concordoDiv");
+        const concordo = document.getElementById("concordo");
+        const btnCadastrar = document.getElementById("btnCadastrar");
+
+        function atualizarVisibilidade() {
+            if (telefone.value.trim() !== "") {
+                // Se digitou telefone, mostra checkbox e exige concordar
+                concordoDiv.classList.remove("d-none");
+                btnCadastrar.disabled = !concordo.checked;
+            } else {
+                // Se não digitou telefone, esconde checkbox e libera cadastro
+                concordoDiv.classList.add("d-none");
+                btnCadastrar.disabled = false;
+                concordo.checked = false;
+            }
+        }
+
+        telefone.addEventListener("input", atualizarVisibilidade);
+        concordo.addEventListener("change", atualizarVisibilidade);
+
+        atualizarVisibilidade(); // inicializa
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const telefone = document.getElementById("telefone");
+    const concordoDiv = document.getElementById("concordoDiv");
+    const concordo = document.getElementById("concordo");
+    const btnCadastrar = document.getElementById("btnCadastrar");
+
+    function atualizarVisibilidade() {
+        if (telefone.value.trim() !== "") {
+            // mostra checkbox e exige marcar
+            concordoDiv.classList.remove("d-none");
+            btnCadastrar.disabled = !concordo.checked;
+        } else {
+            // esconde checkbox se não digitou telefone
+            concordoDiv.classList.add("d-none");
+            btnCadastrar.disabled = false;
+            concordo.checked = false;
+        }
+    }
+
+    telefone.addEventListener("input", atualizarVisibilidade);
+    concordo.addEventListener("change", atualizarVisibilidade);
+
+    atualizarVisibilidade(); // inicializa
+});
+</script>
+
 {% endblock %}
+

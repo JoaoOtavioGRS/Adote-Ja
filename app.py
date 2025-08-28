@@ -124,6 +124,7 @@ def cadastrar():
         nome = request.form.get('nome')
         email = request.form.get('email')
         telefone = request.form.get('telefone')
+        concordo_telefone = request.form.get('concordo')  # <--- novo
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
         estado = request.form.get('estado')
@@ -135,6 +136,10 @@ def cadastrar():
 
         if Usuario.query.filter_by(email=email).first():
             flash('Este email já está cadastrado.', 'danger')
+            return redirect(url_for('cadastrar'))
+
+        if telefone and not concordo_telefone:
+            flash('Para cadastrar o telefone é necessário concordar que ele será público.', 'danger')
             return redirect(url_for('cadastrar'))
 
         # Criptografar senha
@@ -235,6 +240,7 @@ def perfil():
     return render_template('perfil.html', usuario=usuario)
 
 # Editar perfil
+# Editar perfil
 @app.route('/editar_perfil', methods=['GET', 'POST'])
 def editar_perfil():
     if 'usuario_id' not in session:
@@ -271,7 +277,19 @@ def editar_perfil():
     if request.method == 'POST':
         usuario.nome = request.form['nome']
         usuario.email = request.form['email']
-        usuario.telefone = request.form.get('telefone')
+
+        telefone = (request.form.get('telefone') or '').strip()
+        concordo_telefone = request.form.get('concordo_telefone')
+
+        # Se informou telefone mas não marcou o checkbox → erro
+        if telefone:
+            if not concordo_telefone:
+                flash('Para cadastrar o Telefone é necessário concordar que ele será público.', 'danger')
+                return redirect(url_for('editar_perfil'))
+            usuario.telefone = telefone
+        else:
+            usuario.telefone = None
+
         usuario.estado = (request.form.get('estado') or '').strip()
         usuario.cidade = (request.form.get('cidade') or '').strip()
 
@@ -338,6 +356,7 @@ def editar_perfil():
         cidades_iniciais=cidades_iniciais,
         erros=erros
     )
+
 
 # Cadastrar ou editar animal
 @app.route('/animal', methods=['GET', 'POST'])
