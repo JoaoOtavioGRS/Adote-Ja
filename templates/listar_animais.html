@@ -37,24 +37,18 @@
             </select>
         </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Vacinado:</label>
-            <select class="form-select select2" name="vacinado">
-                <option value="">Todos</option>
-                <option value="0" {% if request.args.get('vacinado') == '0' %}selected{% endif %}>Sim</option>
-                <option value="1" {% if request.args.get('vacinado') == '1' %}selected{% endif %}>Não</option>
-                <option value="2" {% if request.args.get('vacinado') == '2' %}selected{% endif %}>Não sei</option>
-            </select>
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label">Castrado:</label>
-            <select class="form-select select2" name="castrado">
-                <option value="">Todos</option>
-                <option value="0" {% if request.args.get('castrado') == '0' %}selected{% endif %}>Sim</option>
-                <option value="1" {% if request.args.get('castrado') == '1' %}selected{% endif %}>Não</option>
-                <option value="2" {% if request.args.get('castrado') == '2' %}selected{% endif %}>Não sei</option>
-            </select>
+        <div class="col-12 col-sm-6 col-md-4">
+            <label class="form-label">Status:</label>
+            <div class="d-flex align-items-center gap-5">
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" id="vacinado" name="vacinado" {% if vacinado %} checked {% endif %}>
+                    <label class="form-check-label" for="vacinado">Vacinados</label>
+                </div>
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" id="castrado" name="castrado" {% if castrado %} checked {% endif %}>
+                    <label class="form-check-label" for="castrado">Castrados</label>
+                </div>
+            </div>
         </div>
 
         <div class="col-md-2">
@@ -254,11 +248,19 @@
         atualizarRacas();
         atualizarCidades();
 
-        $('#btnLimparFiltros').click(function() {
-            $('.select2').val(null).trigger('change');
-            $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
-            $('#formFiltros').submit();
-        });
+     $('#btnLimparFiltros').click(function() {
+    // Limpa os Select2
+    $('.select2').val(null).trigger('change');
+
+    // Reseta a raça
+    $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
+
+    // Desmarca os checkboxes
+    $('#vacinado, #castrado').prop('checked', false);
+
+    // Opcional: enviar o formulário após limpar
+    $('#formFiltros').submit();
+});
 
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(el => new bootstrap.Tooltip(el));

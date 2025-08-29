@@ -418,7 +418,7 @@ def cadastrar_ou_editar_animal(id=None):
 
         db.session.commit()
         flash('Animal salvo com sucesso!', 'success')
-        return redirect(url_for('listar_animais'))
+        return redirect(url_for('meus_anuncios'))
 
     return render_template('cadastrar_editar_animal.html', animal=animal)
 
@@ -432,8 +432,8 @@ def listar_animais():
     especie = request.args.get('especie')
     raca = request.args.get('raca')
     sexo = request.args.get('sexo')
-    vacinado_value = request.args.get('vacinado')
-    castrado_value = request.args.get('castrado')
+    vacinados = request.args.get("vacinado")
+    castrados = request.args.get("castrado")
     estado = request.args.get('estado')
     cidade = request.args.get('cidade')
 
@@ -445,10 +445,10 @@ def listar_animais():
         query = query.filter(Animal.raca == raca)
     if sexo and sexo.strip():
         query = query.filter(Animal.sexo == sexo)
-    if vacinado_value in ('0', '1', '2'):
-        query = query.filter(Animal.vacinado == int(vacinado_value))
-    if castrado_value in ('0', '1', '2'):
-        query = query.filter(Animal.castrado == int(castrado_value))
+    if vacinados:
+        query = query.filter(Animal.vacinado == 0)  # 0 = Sim
+    if castrados:
+        query = query.filter(Animal.castrado == 0)  # 0 = Sim
     if estado and estado != "Indiferente":
         query = query.filter(Usuario.estado == estado)
     if cidade and cidade != "Indiferente":
@@ -500,7 +500,9 @@ def listar_animais():
         meus_anuncios=False,
         pagina_atual='listar_animais',
         estados=estados_lista,
-        cidades_por_estado=cidades_por_estado
+        cidades_por_estado=cidades_por_estado,
+        vacinado=vacinados,
+        castrado=castrados
     )
 
 # PERFIL DE OUTRO USUÁRIO (DOADOR)
