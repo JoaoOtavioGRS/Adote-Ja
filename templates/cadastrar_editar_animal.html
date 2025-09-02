@@ -42,7 +42,9 @@
         <!-- Raça -->
         <div class="col-md-6">
             <label for="raca" class="form-label">Raça:</label>
-            <select class="form-select select2" name="raca" id="raca" required></select>
+            <select class="form-select select2" name="raca" id="raca" required>
+                <option value="">Selecione</option> <!-- opção padrão -->
+            </select>
         </div>
 
         <!-- Sexo -->
@@ -98,6 +100,21 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+    /* Garante que o campo select2 fique com a mesma altura dos selects Bootstrap */
+.select2-container .select2-selection--single {
+    height: calc(2.2rem + 2px) !important;  /* mesma altura padrão do .form-select */
+    padding: 0.375rem 0.75rem !important;
+    line-height: 1.5 !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important; /* bordas iguais ao Bootstrap */
+}
+
+/* Alinha o texto verticalmente */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 2.0 rem !important; /* centraliza o texto */
+}
+</style>
 <script>
     const racas_cachorro = [
         "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle",
@@ -114,40 +131,62 @@
         "Abissínio", "Outros"
     ];
 
+
+
     function atualizarRacas(racaAtual = null) {
-        const especie = document.getElementById("especie").value;
-        const racaSelect = document.getElementById("raca");
+    const especie = document.getElementById("especie").value;
+    const racaSelect = document.getElementById("raca");
 
-        // Limpa opções
-        racaSelect.innerHTML = "";
+    // Limpa opções
+    racaSelect.innerHTML = "";
 
-        let racas = [];
-        if (especie === "Cachorro") racas = racas_cachorro;
-        else if (especie === "Gato") racas = racas_gato;
+    // Opção padrão
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.text = "Selecione";
+    racaSelect.appendChild(defaultOption);
 
-        // Popula opções
-        racas.forEach(raca => {
+    let racas = [];
+    if (especie === "Cachorro") racas = racas_cachorro;
+    else if (especie === "Gato") racas = racas_gato;
+
+    // Popula opções
+    racas.forEach(raca => {
+        const option = document.createElement("option");
+        option.value = raca;
+        option.text = raca;
+        racaSelect.appendChild(option);
+    });
+
+    // Seleciona a raça atual ou adiciona se não estiver na lista
+    if (racaAtual) {
+        if (!racas.includes(racaAtual)) {
             const option = document.createElement("option");
-            option.value = raca;
-            option.text = raca;
+            option.value = racaAtual;
+            option.text = racaAtual;
             racaSelect.appendChild(option);
-        });
-
-        // Seleciona a raça atual ou adiciona se não estiver na lista
-        if (racaAtual) {
-            if (!racas.includes(racaAtual)) {
-                const option = document.createElement("option");
-                option.value = racaAtual;
-                option.text = racaAtual;
-                racaSelect.appendChild(option);
-            }
-            racaSelect.value = racaAtual;
         }
-
-        if ($(racaSelect).hasClass("select2-hidden-accessible")) {
-            $(racaSelect).trigger("change");
-        }
+        racaSelect.value = racaAtual;
+    } else {
+        racaSelect.value = "";
     }
+
+    // Atualiza Select2
+    if ($(racaSelect).hasClass("select2-hidden-accessible")) {
+        $(racaSelect).trigger("change");
+    }
+}
+
+$(document).ready(function() {
+    $('#raca').select2({
+        dropdownParent: $('#raca').parent(), // garante posicionamento correto
+        dropdownAutoWidth: true,
+        width: '100%',
+        dropdownCssClass: 'raca-dropdown',
+        dropdownPosition: 'below' // força abrir para baixo
+    });
+});
+
 
     document.addEventListener("DOMContentLoaded", function () {
         const especieSelect = document.getElementById("especie");

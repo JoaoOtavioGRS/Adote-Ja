@@ -12,65 +12,82 @@
 
     {% if not meus_anuncios %}
     <form method="GET" class="row g-3 mb-4" id="formFiltros">
-        <div class="col-md-3">
-            <label class="form-label">Espécie:</label>
-            <select class="form-select select2" name="especie" id="especie">
-                <option value="">Todas</option>
-                <option value="Cachorro" {% if request.args.get('especie') == 'Cachorro' %}selected{% endif %}>Cachorro</option>
-                <option value="Gato" {% if request.args.get('especie') == 'Gato' %}selected{% endif %}>Gato</option>
-            </select>
-        </div>
 
-        <div class="col-md-3">
-            <label class="form-label">Raça:</label>
-            <select class="form-select select2" name="raca" id="raca">
-                <option value="">Todas</option>
-            </select>
-        </div>
+        <div class="row">
+    <div class="col">
+        <label class="form-label">Espécie:</label>
+        <select class="form-select select2" name="especie" id="especie">
+            <option value="">Todas</option>
+            <option value="Cachorro" {% if request.args.get('especie') == 'Cachorro' %}selected{% endif %}>Cachorro</option>
+            <option value="Gato" {% if request.args.get('especie') == 'Gato' %}selected{% endif %}>Gato</option>
+        </select>
+    </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Sexo:</label>
-            <select class="form-select select2" name="sexo">
-                <option value="">Todos</option>
-                <option value="Macho" {% if request.args.get('sexo') == 'Macho' %}selected{% endif %}>Macho</option>
-                <option value="Fêmea" {% if request.args.get('sexo') == 'Fêmea' %}selected{% endif %}>Fêmea</option>
-            </select>
-        </div>
+    <div class="col">
+        <label class="form-label">Raça:</label>
+        <select class="form-select select2" name="raca" id="raca">
+            <option value="">Todas</option>
+        </select>
+    </div>
 
-        <div class="col-12 col-sm-6 col-md-4">
-            <label class="form-label">Status:</label>
-            <div class="d-flex align-items-center gap-5">
-                <div class="form-check form-switch m-0">
-                    <input class="form-check-input" type="checkbox" id="vacinado" name="vacinado" {% if vacinado %} checked {% endif %}>
-                    <label class="form-check-label" for="vacinado">Vacinados</label>
-                </div>
-                <div class="form-check form-switch m-0">
-                    <input class="form-check-input" type="checkbox" id="castrado" name="castrado" {% if castrado %} checked {% endif %}>
-                    <label class="form-check-label" for="castrado">Castrados</label>
-                </div>
+    <div class="col">
+        <label class="form-label">Sexo:</label>
+        <select class="form-select select2" name="sexo">
+            <option value="">Todos</option>
+            <option value="Macho" {% if request.args.get('sexo') == 'Macho' %}selected{% endif %}>Macho</option>
+            <option value="Fêmea" {% if request.args.get('sexo') == 'Fêmea' %}selected{% endif %}>Fêmea</option>
+        </select>
+    </div>
+
+    <div class="col">
+        <label class="form-label">Estado:</label>
+        <select class="form-select select2" id="estado" name="estado">
+            <option value="">Indiferente</option>
+            {% for e in estados %}
+                <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col">
+        <label class="form-label">Cidade:</label>
+        <select class="form-select select2" id="cidade" name="cidade">
+            <option value="">Indiferente</option>
+        </select>
+    </div>
+</div>
+
+<!-- Mensagem escondida inicialmente -->
+<small id="obs-msg" class="text-secondary" style="display:none;">
+    Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
+</small>
+
+
+<div class="col-md-3">
+    <label class="form-label d-block">Opções</label>
+    <div class="d-flex gap-2">
+
+        <!-- Caixa do Vacinado -->
+        <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
+            <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" name="vacinado" id="vacinado" value="1"
+                       {% if request.args.get('vacinado') %}checked{% endif %}>
+                <label class="form-check-label mb-0 ms-1" for="vacinado">Vacinados</label>
             </div>
         </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Estado:</label>
-            <select class="form-select select2" id="estado" name="estado">
-                <option value="">Indiferente</option>
-                {% for e in estados %}
-                    <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
-                {% endfor %}
-            </select>
+        <!-- Caixa do Castrado -->
+        <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
+            <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" name="castrado" id="castrado" value="1"
+                       {% if request.args.get('castrado') %}checked{% endif %}>
+                <label class="form-check-label mb-0 ms-1" for="castrado">Castrados</label>
+            </div>
         </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Cidade:</label>
-            <select class="form-select select2" id="cidade" name="cidade">
-                <option value="">Indiferente</option>
-            </select>
-        </div>
+    </div>
+</div>
 
-        <small class="text-secondary">
-            Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
-        </small>
 
         <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
@@ -190,18 +207,67 @@
         <p class="text-center">Nenhum animal encontrado.</p>
     {% endif %}
 
-    <div class="text-end mt-4">
-        <button class="btn btn-primary" onclick="scrollToTop()">
-            Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
-        </button>
+    <div>
+    <button id="btnTopo" class="btn btn-primary" style="display:none; position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+        Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
+    </button>
     </div>
+
 </div>
+
 {% endblock %}
 
 {% block scripts %}
+
+<style>
+.tooltip-alert {
+    position: absolute;
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 9999;
+}
+</style>
+
 <script>
-    const racas_cachorro = ["SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle", "Labrador", "Shih Tzu", "Pinscher", "Yorkshire", "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Pitbull", "Outros"];
-    const racas_gato = ["SRD", "Persa", "Siamês", "Maine Coon", "Angorá", "Outros"];
+const racas_cachorro = [
+    "SRD Porte Pequeno",
+    "SRD Porte Médio",
+    "SRD Porte Grande",
+    "Poodle",
+    "Labrador",
+    "Shih Tzu",
+    "Pinscher",
+    "Yorkshire",
+    "Pastor Alemão",
+    "Golden Retriever",
+    "Bulldog Francês",
+    "Pitbull",
+    "Beagle",
+    "Maltês",
+    "Rottweiler",
+    "Schnauzer",
+    "Boxer",
+    "Lulu da Pomerânia",
+    "Outros"
+];
+const racas_gato = [
+    "SRD",
+    "Persa",
+    "Siamês",
+    "Maine Coon",
+    "Angorá",
+    "Ragdoll",
+    "Sphynx",
+    "Bengal",
+    "Scottish Fold",
+    "Outros"
+];
     const cidadesPorEstado = {{ cidades_por_estado | tojson }};
     const filtroCidade = "{{ request.args.get('cidade','') }}";
 
@@ -242,6 +308,33 @@
             language: { noResults: () => "Nenhum resultado encontrado" }
         });
 
+         $('#cidade').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        language: {
+            noResults: function() {
+                if (!$('#estado').val()) {
+                    return "Selecione o estado primeiro";
+                }
+                return "Nenhum resultado encontrado";
+            }
+        }
+    });
+
+    $('#raca').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        language: {
+            noResults: function() {
+                if (!$('#estado').val()) {
+                    return "Selecione a espécie primeiro";
+                }
+                return "Nenhum resultado encontrado";
+            }
+        }
+    });
+
+
         $('#especie').on('change', atualizarRacas);
         $('#estado').on('change', atualizarCidades);
 
@@ -266,8 +359,50 @@
         tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
     });
 
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Mostra/esconde o botão conforme rolagem
+$(window).scroll(function() {
+    if ($(this).scrollTop() > 200) {
+        $('#btnTopo').fadeIn();
+    } else {
+        $('#btnTopo').fadeOut();
     }
+});
+
+// Ação do botão
+$('#btnTopo').click(function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+function mostrarTooltip(campo, mensagem) {
+    // Remove tooltip antiga se existir
+    $('.tooltip-alert').remove();
+
+    // Pega posição do campo
+    let offset = $(campo).next('.select2').offset(); // select2 wrapper
+    let altura = $(campo).next('.select2').outerHeight();
+
+    // Cria tooltip
+    let tooltip = $('<div class="tooltip-alert">'+mensagem+'</div>').appendTo('body');
+
+    // Posiciona em cima do campo
+    tooltip.css({
+        top: offset.top - tooltip.outerHeight() - 8, // 8px acima
+        left: offset.left
+    });
+
+    // Remove depois de 3 segundos
+    setTimeout(() => {
+        tooltip.fadeOut(400, () => tooltip.remove());
+    }, 3000);
+}
+
+// Eventos do Select2
+$('#estado').on('select2:open', function() {
+    mostrarTooltip(this, "Obs: Apenas estados com animais cadastrados aparecem na lista.");
+});
+
+$('#cidade').on('select2:open', function() {
+    mostrarTooltip(this, "Obs: Apenas cidades com animais cadastrados aparecem na lista.");
+});
 </script>
 {% endblock %}

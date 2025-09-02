@@ -140,20 +140,32 @@
             Nenhum anúncio inativo.
         </div>
     {% endif %}
-
-    <div class="text-end mt-4">
-        <button class="btn btn-primary" onclick="scrollToTop()">
-            Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
-        </button>
-    </div>
 </div>
 
+        <button id="btnTopo" class="btn btn-primary"
+                style="display:none; position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+            Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
+        </button>
+
+
+
 <script>
-function scrollToTop() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
+
+        // Mostrar/esconder botão conforme rolagem
+
+    const btnTopo = document.getElementById("btnTopo");
+
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 200) {
+            btnTopo.style.display = "block";
+        } else {
+            btnTopo.style.display = "none";
+        }
     });
-}
+
+    btnTopo.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 </script>
+
 {% endblock %}
