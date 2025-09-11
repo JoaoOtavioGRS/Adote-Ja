@@ -221,20 +221,44 @@ def esqueci_senha():
     if request.method == 'POST':
         email = request.form.get('email')
         usuario = Usuario.query.filter_by(email=email).first()
-        if usuario:
-            token = s.dumps(email, salt='recuperar-senha')
-            link = url_for('redefinir_senha', token=token, _external=True)
 
-            msg = Message(
-                subject="Redefinição de senha Adote-Já",
-                recipients=[email],
-                body=f"Clique no link para redefinir sua senha: {link}"
-            )
-            mail.send(msg)
+        if not usuario:
+            flash("❌ Este e-mail não está cadastrado no sistema.", "danger")
+            return redirect(url_for('esqueci_senha'))
 
-            # Independentemente de existir ou não, mostrar a mensagem
-            flash("Se o e-mail estiver cadastrado, você receberá instruções para redefinir a senha.", "info")
-            return redirect(url_for('login'))
+        # Se existir, gera token e envia e-mail
+        token = s.dumps(email, salt='recuperar-senha')
+        link = url_for('redefinir_senha', token=token, _external=True)
+
+        msg = Message(
+            subject="🔑 Redefinição de Senha - Adote Já",
+            recipients=[email]
+        )
+
+        msg.html = f"""
+        <p>Olá!</p>
+
+        <p>Recebemos sua solicitação para redefinir a senha no sistema <strong>Adote Já 🐾</strong>.</p>
+        <p>Para criar uma nova senha, clique no botão abaixo (o link é válido por <strong>1 hora</strong>):</p>
+
+        <div style="margin: 20px 0;">
+            <a href="{link}" 
+               style="background-color: #198754; color: #fff; padding: 12px 24px; 
+                      text-decoration: none; border-radius: 6px; font-size: 16px; 
+                      display: inline-block;">
+               🔑 Redefinir Senha
+            </a>
+        </div>
+
+        <p>Se você não solicitou, basta ignorar este e-mail com segurança.</p>
+
+        <p>Atenciosamente,<br>
+        Equipe <strong>Adote Já</strong></p>
+        """
+        mail.send(msg)
+
+        flash("📩 Um link de redefinição foi enviado para seu e-mail.", "success")
+        return redirect(url_for('login'))
 
     return render_template('esqueci_senha.html')
 
@@ -266,6 +290,12 @@ def redefinir_senha(token):
             return redirect(url_for('login'))
 
     return render_template('redefinir_senha.html', token=token)
+
+@app.route('/check_email', methods=['POST'])
+def check_email():
+    email = request.json.get('email')
+    usuario = Usuario.query.filter_by(email=email).first()
+    return {'exists': bool(usuario)}
 
 # ROTAS DE LOGIN E LOGOUT
 @app.route('/login', methods=['GET', 'POST'])
