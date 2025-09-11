@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import pytz
 import os, json
 from werkzeug.exceptions import RequestEntityTooLarge
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 
 EXTENSOES_PIL = {
     'jpg': 'JPEG',
@@ -21,9 +23,12 @@ EXTENSOES_PIL = {
 }
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta_aqui'
+app.secret_key = 'u8Jk2f9Pq4vXz7MnB1yR3sT5aL0wQeU6'
 # Limite máximo de upload: 2 MB (ajuste conforme desejar)
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB
+
+# Criar um serializer com uma chave secreta do Flask
+s = URLSafeTimedSerializer(app.secret_key)
 
 # Aqui você cola o tratamento do erro
 @app.errorhandler(RequestEntityTooLarge)
@@ -44,6 +49,16 @@ app.config['UPLOAD_FOLDER_USUARIO'] = os.path.join('static', 'fotos_perfil')
 os.makedirs(app.config['UPLOAD_FOLDER_USUARIO'], exist_ok=True)
 app.config['UPLOAD_FOLDER_ANIMAL'] = os.path.join('static', 'uploads/img_animais/')
 os.makedirs(app.config['UPLOAD_FOLDER_ANIMAL'], exist_ok=True)
+
+# Configurações de e-mail (usando Gmail)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'adotejapet@gmail.com'
+app.config['MAIL_PASSWORD'] = 'juvmlfxotammqzao'
+app.config['MAIL_DEFAULT_SENDER'] = ('Adote-Já', 'adotejapet@gmail.com')
+
+mail = Mail(app)
 
 db = SQLAlchemy(app)
 
@@ -200,6 +215,57 @@ def cadastrar():
         estados=estados_lista,
         cidades_por_estado=cidades_por_estado
     )
+
+@app.route('/esqueci_senha', methods=['GET', 'POST'])
+def esqueci_senha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        usuario = Usuario.query.filter_by(email=email).first()
+        if usuario:
+            token = s.dumps(email, salt='recuperar-senha')
+            link = url_for('redefinir_senha', token=token, _external=True)
+
+            msg = Message(
+                subject="Redefinição de senha Adote-Já",
+                recipients=[email],
+                body=f"Clique no link para redefinir sua senha: {link}"
+            )
+            mail.send(msg)
+
+            # Independentemente de existir ou não, mostrar a mensagem
+            flash("Se o e-mail estiver cadastrado, você receberá instruções para redefinir a senha.", "info")
+            return redirect(url_for('login'))
+
+    return render_template('esqueci_senha.html')
+
+@app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
+def redefinir_senha(token):
+    try:
+        email = s.loads(token, salt='recuperar-senha', max_age=3600)
+    except Exception:
+        flash("O link é inválido ou expirou.", "danger")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        nova_senha = request.form.get('senha')
+        confirmar_senha = request.form.get('confirmar_senha')
+
+        if nova_senha != confirmar_senha:
+            flash("As senhas não coincidem.", "danger")
+            # Renderiza o template novamente sem redirecionar
+            return render_template('redefinir_senha.html', token=token)
+
+        usuario = Usuario.query.filter_by(email=email).first()
+        if usuario:
+            usuario.senha = generate_password_hash(nova_senha)
+            db.session.commit()
+            flash("Senha redefinida com sucesso! Faça login com a nova senha.", "success")
+            return redirect(url_for('login'))
+        else:
+            flash("Usuário não encontrado.", "danger")
+            return redirect(url_for('login'))
+
+    return render_template('redefinir_senha.html', token=token)
 
 # ROTAS DE LOGIN E LOGOUT
 @app.route('/login', methods=['GET', 'POST'])

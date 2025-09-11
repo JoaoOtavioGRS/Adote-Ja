@@ -4,3 +4,5 @@ Werkzeug==2.3.8
 pillow==10.1.0
 pytz==2025.7
 PyMySQL==1.1.1
+Flask-Mail==0.9.1
+itsdangerous==2.2.2
