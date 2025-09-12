@@ -89,9 +89,13 @@
             <input type="file" class="form-control" name="foto" accept="image/*">
         </div>
 
-        <!-- Botão -->
-        <div class="col-12 d-grid">
-            <button type="submit" class="btn btn-{{ 'primary' if animal else 'success' }}">
+
+    <!-- Botões -->
+        <div class="col-12 d-flex gap-2 justify-content-end">
+            <a href="{{ url_for('listar_animais') }}" class="btn btn-danger flex-fill">
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-success flex-fill">
                 {{ 'Salvar Alterações' if animal else 'Cadastrar' }}
             </button>
         </div>
