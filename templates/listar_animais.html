@@ -14,80 +14,78 @@
     <form method="GET" class="row g-3 mb-4" id="formFiltros">
 
         <div class="row">
-    <div class="col">
-        <label class="form-label">Espécie:</label>
-        <select class="form-select select2" name="especie" id="especie">
-            <option value="">Todas</option>
-            <option value="Cachorro" {% if request.args.get('especie') == 'Cachorro' %}selected{% endif %}>Cachorro</option>
-            <option value="Gato" {% if request.args.get('especie') == 'Gato' %}selected{% endif %}>Gato</option>
-        </select>
-    </div>
+            <div class="col mb-3">
+                <label class="form-label">Espécie:</label>
+                <select class="form-select form-select-lg select2" name="especie" id="especie">
+                    <option value="">Todas</option>
+                    <option value="Cachorro" {% if request.args.get('especie') == 'Cachorro' %}selected{% endif %}>Cachorro</option>
+                    <option value="Gato" {% if request.args.get('especie') == 'Gato' %}selected{% endif %}>Gato</option>
+                </select>
+            </div>
 
-    <div class="col">
-        <label class="form-label">Raça:</label>
-        <select class="form-select select2" name="raca" id="raca">
-            <option value="">Todas</option>
-        </select>
-    </div>
+            <div class="col mb-3">
+                <label class="form-label">Raça:</label>
+                <select class="form-select form-select-lg select2" name="raca" id="raca">
+                    <option value="">Todas</option>
+                </select>
+            </div>
 
-    <div class="col">
-        <label class="form-label">Sexo:</label>
-        <select class="form-select select2" name="sexo">
-            <option value="">Todos</option>
-            <option value="Macho" {% if request.args.get('sexo') == 'Macho' %}selected{% endif %}>Macho</option>
-            <option value="Fêmea" {% if request.args.get('sexo') == 'Fêmea' %}selected{% endif %}>Fêmea</option>
-        </select>
-    </div>
+            <div class="col mb-3">
+                <label class="form-label">Sexo:</label>
+                <select class="form-select form-select-lg select2" name="sexo">
+                    <option value="">Todos</option>
+                    <option value="Macho" {% if request.args.get('sexo') == 'Macho' %}selected{% endif %}>Macho</option>
+                    <option value="Fêmea" {% if request.args.get('sexo') == 'Fêmea' %}selected{% endif %}>Fêmea</option>
+                </select>
+            </div>
 
-    <div class="col">
-        <label class="form-label">Estado:</label>
-        <select class="form-select select2" id="estado" name="estado">
-            <option value="">Indiferente</option>
-            {% for e in estados %}
-                <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
-            {% endfor %}
-        </select>
-    </div>
+            <div class="col mb-3">
+                <label class="form-label">Estado:</label>
+                <select class="form-select form-select-lg select2" id="estado" name="estado">
+                    <option value="">Indiferente</option>
+                    {% for e in estados %}
+                        <option value="{{ e.id }}" {% if request.args.get('estado') == e.id %}selected{% endif %}>{{ e.estado }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-    <div class="col">
-        <label class="form-label">Cidade:</label>
-        <select class="form-select select2" id="cidade" name="cidade">
-            <option value="">Indiferente</option>
-        </select>
-    </div>
-</div>
-
-<!-- Mensagem escondida inicialmente -->
-<small id="obs-msg" class="text-secondary" style="display:none;">
-    Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
-</small>
-
-
-<div class="col-md-3">
-    <label class="form-label d-block">Opções</label>
-    <div class="d-flex gap-2">
-
-        <!-- Caixa do Vacinado -->
-        <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
-            <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" role="switch" name="vacinado" id="vacinado" value="1"
-                       {% if request.args.get('vacinado') %}checked{% endif %}>
-                <label class="form-check-label mb-0 ms-1" for="vacinado">Vacinados</label>
+            <div class="col mb-3">
+                <label class="form-label">Cidade:</label>
+                <select class="form-select form-select-lg select2" id="cidade" name="cidade">
+                    <option value="">Indiferente</option>
+                </select>
             </div>
         </div>
 
-        <!-- Caixa do Castrado -->
-        <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
-            <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" role="switch" name="castrado" id="castrado" value="1"
-                       {% if request.args.get('castrado') %}checked{% endif %}>
-                <label class="form-check-label mb-0 ms-1" for="castrado">Castrados</label>
+        <!-- Mensagem escondida inicialmente -->
+        <small id="obs-msg" class="text-secondary" style="display:none;">
+            Obs: Apenas estados e cidades com animais cadastrados aparecem na lista.
+        </small>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label d-block">Opções</label>
+            <div class="d-flex gap-2 flex-wrap">
+
+                <!-- Caixa do Vacinado -->
+                <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" role="switch" name="vacinado" id="vacinado" value="1"
+                               {% if request.args.get('vacinado') %}checked{% endif %}>
+                        <label class="form-check-label mb-0 ms-1" for="vacinado">Vacinados</label>
+                    </div>
+                </div>
+
+                <!-- Caixa do Castrado -->
+                <div class="opcao-checkbox p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" role="switch" name="castrado" id="castrado" value="1"
+                               {% if request.args.get('castrado') %}checked{% endif %}>
+                        <label class="form-check-label mb-0 ms-1" for="castrado">Castrados</label>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-    </div>
-</div>
-
 
         <div class="col-12 d-flex justify-content-start gap-2 mt-3">
             <button type="submit" class="btn btn-success">Filtrar</button>
@@ -204,13 +202,13 @@
         </div>
         {% endfor %}
     {% else %}
-        <p class="text-center">Nenhum animal encontrado.</p>
+        <p class="text-center">Nenhum animal encontrado, mas tenho certeza que tem algum por aí te esperando 🐾.</p>
     {% endif %}
 
     <div>
-    <button id="btnTopo" class="btn btn-primary" style="display:none; position: fixed; bottom: 20px; right: 20px; z-index: 999;">
-        Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
-    </button>
+        <button id="btnTopo" class="btn btn-primary" style="display:none; position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+            Voltar ao Topo <i class="fa-solid fa-circle-up"></i>
+        </button>
     </div>
 
 </div>
@@ -223,7 +221,6 @@
              alt="Amigo de 4 patas"
              style="height: 390 px; object-fit: cover; width: 100%; border-color: #dee2e6; opacity: 0.92;">
 
-        <!-- Texto sobreposto -->
         <div class="position-absolute top-50 start-50 translate-middle text-center px-3">
             <p class="h4 fw-bold text-white"
                style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 6px 12px;">
@@ -236,8 +233,28 @@
 {% endblock %}
 
 {% block scripts %}
-
 <style>
+
+/* Estilo moderno para Select2 */
+.select2-container--default .select2-selection--single {
+    height: 45px;
+    border-radius: 12px;
+    border: 1px solid #ced4da;
+    padding: 6px 12px;
+    background-color: #f8f9fa;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px;
+    color: #495057;
+    font-weight: 500;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    margin-top: 6px;
+}
+.select2-container--default .select2-results__option--highlighted {
+    background-color: #198754;
+    color: white;
+}
 .tooltip-alert {
     position: absolute;
     background: #fff3cd;
@@ -253,131 +270,81 @@
 </style>
 
 <script>
-const racas_cachorro = [
-    "SRD Porte Pequeno",
-    "SRD Porte Médio",
-    "SRD Porte Grande",
-    "Poodle",
-    "Labrador",
-    "Shih Tzu",
-    "Pinscher",
-    "Yorkshire",
-    "Pastor Alemão",
-    "Golden Retriever",
-    "Bulldog Francês",
-    "Pitbull",
-    "Beagle",
-    "Maltês",
-    "Rottweiler",
-    "Schnauzer",
-    "Boxer",
-    "Lulu da Pomerânia",
-    "Outros"
-];
-const racas_gato = [
-    "SRD",
-    "Persa",
-    "Siamês",
-    "Maine Coon",
-    "Angorá",
-    "Ragdoll",
-    "Sphynx",
-    "Bengal",
-    "Scottish Fold",
-    "Outros"
-];
-    const cidadesPorEstado = {{ cidades_por_estado | tojson }};
-    const filtroCidade = "{{ request.args.get('cidade','') }}";
+    const racas_cachorro = [
+        "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle",
+        "Labrador Retriever", "Shih Tzu", "Pinscher", "Yorkshire Terrier",
+        "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Bulldog Inglês",
+        "Beagle", "Boxer", "Chow Chow", "Dobermann", "Spitz Alemão (Lulu da Pomerânia)",
+        "Border Collie", "Rottweiler", "Basset Hound", "Cocker Spaniel",
+        "Maltês", "Dachshund (Salsicha)", "Pug", "Outros"
+    ];
 
-    function atualizarRacas() {
-        const especie = $('#especie').val();
-        let racas = [];
-        if (especie === "Cachorro") racas = racas_cachorro;
-        else if (especie === "Gato") racas = racas_gato;
+    const racas_gato = [
+        "SRD", "Persa", "Siamês", "Maine Coon", "Angorá Turco", "Ragdoll",
+        "Sphynx", "Bengal", "British Shorthair", "American Shorthair",
+        "Abissínio", "Outros"
+    ];
 
-        const $raca = $('#raca');
-        $raca.empty().append('<option value="">Todas</option>');
-        racas.forEach(raca => $raca.append(`<option value="${raca}">${raca}</option>`));
+const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+const filtroCidade = "{{ request.args.get('cidade','') }}";
 
-        const racaSelecionada = "{{ request.args.get('raca', '') }}";
-        if (racaSelecionada) $raca.val(racaSelecionada).trigger('change.select2');
-        else $raca.trigger('change.select2');
-    }
+function atualizarRacas() {
+    const especie = $('#especie').val();
+    let racas = [];
+    if (especie === "Cachorro") racas = racas_cachorro;
+    else if (especie === "Gato") racas = racas_gato;
 
-    function atualizarCidades() {
-        const estado = $('#estado').val();
-        const $cidade = $('#cidade');
-        $cidade.empty().append('<option value="">Indiferente</option>');
+    const $raca = $('#raca');
+    $raca.empty().append('<option value="">Todas</option>');
+    racas.forEach(raca => $raca.append(`<option value="${raca}">${raca}</option>`));
 
-        if (estado && cidadesPorEstado[estado]) {
-            cidadesPorEstado[estado].forEach(c => {
-                const option = $('<option>').val(c).text(c);
-                if (c === filtroCidade) option.prop('selected', true);
-                $cidade.append(option);
-            });
-        }
-        $cidade.trigger('change.select2');
-    }
+    const racaSelecionada = "{{ request.args.get('raca', '') }}";
+    if (racaSelecionada) $raca.val(racaSelecionada).trigger('change.select2');
+    else $raca.trigger('change.select2');
+}
 
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "Selecione",
-            allowClear: true,
-            language: { noResults: () => "Nenhum resultado encontrado" }
+function atualizarCidades() {
+    const estado = $('#estado').val();
+    const $cidade = $('#cidade');
+    $cidade.empty().append('<option value="">Indiferente</option>');
+
+    if (estado && cidadesPorEstado[estado]) {
+        cidadesPorEstado[estado].forEach(c => {
+            const option = $('<option>').val(c).text(c);
+            if (c === filtroCidade) option.prop('selected', true);
+            $cidade.append(option);
         });
+    }
+    $cidade.trigger('change.select2');
+}
 
-         $('#cidade').select2({
+$(document).ready(function() {
+    $('.select2').select2({
         placeholder: "Selecione",
         allowClear: true,
-        language: {
-            noResults: function() {
-                if (!$('#estado').val()) {
-                    return "Selecione o estado primeiro";
-                }
-                return "Nenhum resultado encontrado";
-            }
-        }
+        language: { noResults: () => "Nenhum resultado encontrado" }
     });
 
-    $('#raca').select2({
-        placeholder: "Selecione",
-        allowClear: true,
-        language: {
-            noResults: function() {
-                if (!$('#estado').val()) {
-                    return "Selecione a espécie primeiro";
-                }
-                return "Nenhum resultado encontrado";
-            }
-        }
+    $('#raca').select2({ placeholder: "Selecione", allowClear: true });
+    $('#cidade').select2({ placeholder: "Selecione", allowClear: true });
+
+    $('#especie').on('change', atualizarRacas);
+    $('#estado').on('change', atualizarCidades);
+
+    atualizarRacas();
+    atualizarCidades();
+
+    $('#btnLimparFiltros').click(function() {
+        $('.select2').val(null).trigger('change');
+        $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
+        $('#vacinado, #castrado').prop('checked', false);
+        $('#formFiltros').submit();
     });
 
-
-        $('#especie').on('change', atualizarRacas);
-        $('#estado').on('change', atualizarCidades);
-
-        atualizarRacas();
-        atualizarCidades();
-
-     $('#btnLimparFiltros').click(function() {
-    // Limpa os Select2
-    $('.select2').val(null).trigger('change');
-
-    // Reseta a raça
-    $('#raca').empty().append('<option value="">Todas</option>').trigger('change');
-
-    // Desmarca os checkboxes
-    $('#vacinado, #castrado').prop('checked', false);
-
-    // Opcional: enviar o formulário após limpar
-    $('#formFiltros').submit();
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
 });
 
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
-    });
-
-    // Mostra/esconde o botão conforme rolagem
 $(window).scroll(function() {
     if ($(this).scrollTop() > 200) {
         $('#btnTopo').fadeIn();
@@ -386,41 +353,20 @@ $(window).scroll(function() {
     }
 });
 
-// Ação do botão
 $('#btnTopo').click(function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 function mostrarTooltip(campo, mensagem) {
-    // Remove tooltip antiga se existir
     $('.tooltip-alert').remove();
-
-    // Pega posição do campo
-    let offset = $(campo).next('.select2').offset(); // select2 wrapper
+    let offset = $(campo).next('.select2').offset();
     let altura = $(campo).next('.select2').outerHeight();
-
-    // Cria tooltip
     let tooltip = $('<div class="tooltip-alert">'+mensagem+'</div>').appendTo('body');
-
-    // Posiciona em cima do campo
-    tooltip.css({
-        top: offset.top - tooltip.outerHeight() - 8, // 8px acima
-        left: offset.left
-    });
-
-    // Remove depois de 3 segundos
-    setTimeout(() => {
-        tooltip.fadeOut(400, () => tooltip.remove());
-    }, 3000);
+    tooltip.css({ top: offset.top - tooltip.outerHeight() - 8, left: offset.left });
+    setTimeout(() => { tooltip.fadeOut(400, () => tooltip.remove()); }, 3000);
 }
 
-// Eventos do Select2
-$('#estado').on('select2:open', function() {
-    mostrarTooltip(this, "Obs: Apenas estados com animais cadastrados aparecem na lista.");
-});
-
-$('#cidade').on('select2:open', function() {
-    mostrarTooltip(this, "Obs: Apenas cidades com animais cadastrados aparecem na lista.");
-});
+$('#estado').on('select2:open', function() { mostrarTooltip(this, "Obs: Apenas estados com animais cadastrados aparecem na lista."); });
+$('#cidade').on('select2:open', function() { mostrarTooltip(this, "Obs: Apenas cidades com animais cadastrados aparecem na lista."); });
 </script>
 {% endblock %}
