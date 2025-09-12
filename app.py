@@ -308,7 +308,6 @@ def login():
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
             session['usuario_foto'] = usuario.foto if usuario.foto else None
-            flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home'))
         else:
             flash('E-mail ou senha inválidos.', 'danger')
@@ -318,7 +317,6 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Você saiu do sistema.', 'info')
     return redirect(url_for('login'))
 
 
