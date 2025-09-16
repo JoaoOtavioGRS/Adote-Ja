@@ -708,6 +708,21 @@ def excluir_animal(id):
     next_url = request.form.get('next')
     return redirect(next_url or url_for('meus_anuncios'))
 
+# INATIVAR ANIMAL
+@app.route('/inativar_animal/<int:id>', methods=['POST'])
+def inativar_animal(id):
+    animal = Animal.query.get_or_404(id)
+
+    if animal.usuario_id != session['usuario_id']:
+        flash('Você não tem permissão para inativar este anúncio.', 'danger')
+        return redirect(url_for('meus_anuncios'))
+
+    animal.ativo = False
+    db.session.commit()
+
+    flash('Anúncio inativado com sucesso! 🐾', 'success')
+    return redirect(url_for('meus_anuncios'))
+
 
 # RODAR APLICATIVO
 if __name__ == '__main__':

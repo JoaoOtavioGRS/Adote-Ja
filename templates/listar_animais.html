@@ -113,55 +113,64 @@
                         </div>
 
                         <div class="d-flex">
-                            <!-- Botão Ver Perfil do Doador (sempre aparece) -->
-                            <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador"
-                                    data-bs-toggle="modal" data-bs-target="#perfilDoador{{ animal.usuario.id }}">
-                                <i class="fas fa-user"></i>
-                            </button>
+                          {% if session['usuario_id'] != animal.usuario.id %}
+                        <!-- Botão Ver Perfil do Doador -->
+                        <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador"
+                                data-bs-toggle="modal" data-bs-target="#perfilDoador{{ animal.usuario.id }}">
+                            <i class="fas fa-user"></i>
+                        </button>
 
-                            <!-- Modal Perfil do Doador (sempre renderizado) -->
-                            <div class="modal fade" id="perfilDoador{{ animal.usuario.id }}" tabindex="-1"
-                                 aria-labelledby="perfilDoadorLabel{{ animal.usuario.id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content shadow-lg">
-                                        <div class="modal-header bg-primary text-white">
-                                            <h5 class="modal-title" id="perfilDoadorLabel{{ animal.usuario.id }}">Perfil do Doador</h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="card border-0">
-                                                <div class="card-body text-center">
-                                                    {% if animal.usuario.foto and animal.usuario.foto != 'None' and animal.usuario.foto != '' %}
-                                                        <img src="{{ url_for('static', filename='fotos_perfil/' ~ animal.usuario.foto) }}"
-                                                             class="rounded-circle border border-3 border-primary mb-3"
-                                                             style="width: 150px; height: 150px; object-fit: cover;"
-                                                             alt="Foto de Perfil">
-                                                    {% else %}
-                                                        <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle mb-3 mx-auto"
-                                                             style="width: 150px; height: 150px;">
-                                                            <i class="fa-solid fa-user fa-4x"></i>
-                                                        </div>
-                                                    {% endif %}
-                                                    <h5 class="card-title">{{ animal.usuario.nome }}</h5>
-                                                    <p class="card-text"><i class="fas fa-envelope me-2"></i>{{ animal.usuario.email }}</p>
-                                                    {% if animal.usuario.telefone %}
-                                                        <p class="card-text"><i class="fas fa-phone me-2"></i>{{ animal.usuario.telefone }}</p>
-                                                    {% endif %}
-                                                    <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>{{ animal.usuario.cidade }} - {{ animal.usuario.estado }}</p>
-                                                </div>
+                        <!-- Modal Perfil do Doador -->
+                        <div class="modal fade" id="perfilDoador{{ animal.usuario.id }}" tabindex="-1"
+                             aria-labelledby="perfilDoadorLabel{{ animal.usuario.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content shadow-lg">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="perfilDoadorLabel{{ animal.usuario.id }}">Perfil do Doador</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="card border-0">
+                                            <div class="card-body text-center">
+                                                {% if animal.usuario.foto and animal.usuario.foto != 'None' and animal.usuario.foto != '' %}
+                                                    <img src="{{ url_for('static', filename='fotos_perfil/' ~ animal.usuario.foto) }}"
+                                                         class="rounded-circle border border-3 border-primary mb-3"
+                                                         style="width: 150px; height: 150px; object-fit: cover;"
+                                                         alt="Foto de Perfil">
+                                                {% else %}
+                                                    <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle mb-3 mx-auto"
+                                                         style="width: 150px; height: 150px;">
+                                                        <i class="fa-solid fa-user fa-4x"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <h5 class="card-title">{{ animal.usuario.nome }}</h5>
+                                                <p class="card-text"><i class="fas fa-envelope me-2"></i>{{ animal.usuario.email }}</p>
+                                                {% if animal.usuario.telefone %}
+                                                    <p class="card-text"><i class="fas fa-phone me-2"></i>{{ animal.usuario.telefone }}</p>
+                                                {% endif %}
+                                                <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>{{ animal.usuario.cidade }} - {{ animal.usuario.estado }}</p>
                                             </div>
                                         </div>
-                                        <div class="modal-footer justify-content-center">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        </div>
+                                    </div>
+                                    <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    {% endif %}
 
                             {% if session['usuario_id'] == animal.usuario.id %}
                                 <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                             <!-- Botão Inativar que abre o modal -->
+                                <form method="POST" action="{{ url_for('inativar_animal', id=animal.id) }}" class="d-inline">
+                                    <button type="button" class="btn btn-sm btn-warning me-1" title="Inativar"
+                                            data-bs-toggle="modal" data-bs-target="#modalInativar{{ animal.id }}">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </form>
                                 <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir"
                                             data-bs-toggle="modal" data-bs-target="#modalExcluir{{ animal.id }}">
@@ -193,6 +202,28 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <!-- Modal de Confirmação de Inativação -->
+                        <div class="modal fade" id="modalInativar{{ animal.id }}" tabindex="-1" aria-labelledby="modalInativarLabel{{ animal.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content shadow-lg">
+                                    <div class="modal-header bg-warning text-dark">
+                                        <h5 class="modal-title" id="modalInativarLabel{{ animal.id }}">Confirmar Inativação</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <p>Você tem certeza que deseja **inativar** o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
+                                        <p class="text-muted mb-0"><small>O anúncio ficará inativo e poderá ser reativado depois.</small></p>
+                                    </div>
+                                    <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <form method="POST" action="{{ url_for('inativar_animal', id=animal.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-warning">Inativar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     <hr class="my-2">
 

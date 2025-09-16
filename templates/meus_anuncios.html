@@ -25,17 +25,49 @@
                                 <small class="text-muted">Cadastrado em: {{ animal.criado_em.strftime('%d/%m/%Y') }}</small>
                             </div>
                             <div>
-                                <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                              <div class="d-flex gap-1">
+                                <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <input type="hidden" name="next" value="{{ url_for('meus_anuncios') }}">
-                                    <!-- Botão que abre o modal -->
+
+                                    <form method="POST" action="{{ url_for('inativar_animal', id=animal.id) }}">
+                                           <!-- Botão Inativar que abre o modal -->
+                                        <button type="button" class="btn btn-sm btn-warning" title="Inativar"
+                                                data-bs-toggle="modal" data-bs-target="#modalInativar{{ animal.id }}">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </form>
+
+                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}">
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir"
                                             data-bs-toggle="modal" data-bs-target="#modalExcluir{{ animal.id }}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
+                            </div>
+
+                            <!-- Modal de Inativação -->
+                            <div class="modal fade" id="modalInativar{{ animal.id }}" tabindex="-1" aria-labelledby="modalInativarLabel{{ animal.id }}" aria-hidden="true">
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content shadow-lg">
+                                  <div class="modal-header bg-warning text-dark">
+                                    <h5 class="modal-title" id="modalInativarLabel{{ animal.id }}">Confirmar Inativação</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                  </div>
+                                  <div class="modal-body text-center">
+                                    <p>Você tem certeza que deseja **inativar** o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
+                                    <p class="text-muted mb-0"><small>Você poderá reativá-lo posteriormente.</small></p>
+                                  </div>
+                                  <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <form method="POST" action="{{ url_for('inativar_animal', id=animal.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-warning">Inativar</button>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
                                 <!-- Modal de Confirmação -->
                                     <div class="modal fade" id="modalExcluir{{ animal.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ animal.id }}" aria-hidden="true">
                                       <div class="modal-dialog modal-dialog-centered">
@@ -112,11 +144,13 @@
     {% if inativos %}
         {% for animal in inativos %}
             <div class="card mb-3 shadow-sm position-relative" style="opacity:0.6;">
-                <!-- Botão Reativar no canto superior direito -->
+                <!-- Botão Reativar que abre o modal -->
                 <form method="POST" action="{{ url_for('reativar_animal', id=animal.id) }}" class="position-absolute top-0 end-0 m-3">
-                    <button type="submit" class="btn btn-sm btn-success">Reativar anúncio</button>
+                    <button type="button" class="btn btn-sm btn-success"
+                            data-bs-toggle="modal" data-bs-target="#modalReativar{{ animal.id }}">
+                        Reativar anúncio
+                    </button>
                 </form>
-
                 <div class="row g-0 align-items-center">
                     <div class="col-md-4 text-center d-flex justify-content-center align-items-center" style="height:200px;">
                         <img src="{{ url_for('static', filename='uploads/img_animais/' + animal.foto) if animal.foto else url_for('static', filename='img/placeholder_pet.jpeg') }}"
@@ -153,9 +187,31 @@
                             </div>
                         </div>
 
-                        <small class="text-danger fw-bold">Anúncio Expirado</small>
+                        <small class="text-danger fw-bold">Anúncio Expirado ou Inativado</small>
                     </div>
                 </div>
+            </div>
+
+                <!-- Modal de Reativação -->
+            <div class="modal fade" id="modalReativar{{ animal.id }}" tabindex="-1" aria-labelledby="modalReativarLabel{{ animal.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg">
+                  <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalReativarLabel{{ animal.id }}">Confirmar Reativação</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                  </div>
+                  <div class="modal-body text-center">
+                    <p>Você tem certeza que deseja **reativar** o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
+                    <p class="text-muted mb-0"><small>O anúncio voltará a ficar ativo na sua lista.</small></p>
+                  </div>
+                  <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="POST" action="{{ url_for('reativar_animal', id=animal.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success">Reativar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
             </div>
         {% endfor %}
     {% else %}
