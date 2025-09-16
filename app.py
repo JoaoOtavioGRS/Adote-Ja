@@ -303,14 +303,24 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         senha = request.form['senha']
+
+        # Busca usuário no banco
         usuario = Usuario.query.filter_by(email=email).first()
+
         if usuario and check_password_hash(usuario.senha, senha):
+            # Salva dados do usuário na sessão
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
+            session['usuario_email'] = usuario.email or 'Email não informado'
+            session['usuario_telefone'] = usuario.telefone or 'Telefone não informado'
+            session['usuario_cidade'] = usuario.cidade or 'Cidade não informada'
+            session['usuario_estado'] = usuario.estado or 'Estado não informado'
             session['usuario_foto'] = usuario.foto if usuario.foto else None
+
             return redirect(url_for('home'))
         else:
             flash('E-mail ou senha inválidos.', 'danger')
+
     return render_template('login.html')
 
 

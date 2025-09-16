@@ -43,21 +43,6 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-                    <!-- Perfil -->
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center" href="{{ url_for('perfil') }}">
-                            {% if session.get('usuario_foto') %}
-                                <img src="{{ url_for('static', filename='fotos_perfil/' + session['usuario_foto']) }}"
-                                     alt="Foto do usuário"
-                                     class="rounded-circle me-2"
-                                     style="width:28px; height:28px; object-fit:cover; border:1px solid #fff;">
-                            {% else %}
-                                <i class="fa-solid fa-user-circle fa-lg me-2"></i>
-                            {% endif %}
-                            Perfil
-                        </a>
-                    </li>
-
                     <!-- Início -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('home') }}">
@@ -91,13 +76,31 @@
 
                 </ul>
 
-                <!-- Botão Sair -->
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <!-- Botões à direita -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 d-flex align-items-center gap-3">
+
+                    <!-- Perfil -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center" href="{{ url_for('perfil') }}">
+                            {% if session.get('usuario_foto') %}
+                                <img src="{{ url_for('static', filename='fotos_perfil/' + session['usuario_foto']) }}"
+                                     alt="Foto do usuário"
+                                     class="rounded-circle me-2"
+                                     style="width:28px; height:28px; object-fit:cover; border:1px solid #fff;">
+                            {% else %}
+                                <i class="fa-solid fa-user-circle fa-lg me-2"></i>
+                            {% endif %}
+                            Perfil
+                        </a>
+                    </li>
+
+                    <!-- Sair -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('logout') }}">
                             <i class="fas fa-sign-out-alt"></i> Sair
                         </a>
                     </li>
+
                 </ul>
             </div>
             {% endif %}
