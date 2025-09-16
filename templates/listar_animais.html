@@ -121,10 +121,34 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este animal?')">
+                                    <!-- Botão que abre o modal -->
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir"
+                                            data-bs-toggle="modal" data-bs-target="#modalExcluir{{ animal.id }}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
+                                <!-- Modal de Confirmação -->
+                                <div class="modal fade" id="modalExcluir{{ animal.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ animal.id }}" aria-hidden="true">
+                                  <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content shadow-lg">
+                                      <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="modalExcluirLabel{{ animal.id }}">Confirmar Exclusão</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                      </div>
+                                      <div class="modal-body text-center">
+                                        <p>Você tem certeza que deseja excluir o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
+                                        <p class="text-muted mb-0"><small>Essa ação não poderá ser desfeita.</small></p>
+                                      </div>
+                                      <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-danger">Excluir</button>
+                                        </form>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
                             {% else %}
                                 <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
                                     <i class="fas fa-user"></i>
