@@ -113,46 +113,83 @@
                         </div>
 
                         <div class="d-flex">
+                            <!-- Botão Ver Perfil do Doador (sempre aparece) -->
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador"
+                                    data-bs-toggle="modal" data-bs-target="#perfilDoador{{ animal.usuario.id }}">
+                                <i class="fas fa-user"></i>
+                            </button>
+
+                            <!-- Modal Perfil do Doador (sempre renderizado) -->
+                            <div class="modal fade" id="perfilDoador{{ animal.usuario.id }}" tabindex="-1"
+                                 aria-labelledby="perfilDoadorLabel{{ animal.usuario.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content shadow-lg">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title" id="perfilDoadorLabel{{ animal.usuario.id }}">Perfil do Doador</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="card border-0">
+                                                <div class="card-body text-center">
+                                                    {% if animal.usuario.foto and animal.usuario.foto != 'None' and animal.usuario.foto != '' %}
+                                                        <img src="{{ url_for('static', filename='fotos_perfil/' ~ animal.usuario.foto) }}"
+                                                             class="rounded-circle border border-3 border-primary mb-3"
+                                                             style="width: 150px; height: 150px; object-fit: cover;"
+                                                             alt="Foto de Perfil">
+                                                    {% else %}
+                                                        <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle mb-3 mx-auto"
+                                                             style="width: 150px; height: 150px;">
+                                                            <i class="fa-solid fa-user fa-4x"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <h5 class="card-title">{{ animal.usuario.nome }}</h5>
+                                                    <p class="card-text"><i class="fas fa-envelope me-2"></i>{{ animal.usuario.email }}</p>
+                                                    {% if animal.usuario.telefone %}
+                                                        <p class="card-text"><i class="fas fa-phone me-2"></i>{{ animal.usuario.telefone }}</p>
+                                                    {% endif %}
+                                                    <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>{{ animal.usuario.cidade }} - {{ animal.usuario.estado }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer justify-content-center">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {% if session['usuario_id'] == animal.usuario.id %}
-                                <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Ver perfil do doador">
-                                    <i class="fas fa-user"></i>
-                                </a>
                                 <a href="{{ url_for('cadastrar_ou_editar_animal', id=animal.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                    <!-- Botão que abre o modal -->
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Excluir"
                                             data-bs-toggle="modal" data-bs-target="#modalExcluir{{ animal.id }}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
+
                                 <!-- Modal de Confirmação -->
                                 <div class="modal fade" id="modalExcluir{{ animal.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ animal.id }}" aria-hidden="true">
-                                  <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content shadow-lg">
-                                      <div class="modal-header bg-danger text-white">
-                                        <h5 class="modal-title" id="modalExcluirLabel{{ animal.id }}">Confirmar Exclusão</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                                      </div>
-                                      <div class="modal-body text-center">
-                                        <p>Você tem certeza que deseja excluir o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
-                                        <p class="text-muted mb-0"><small>Essa ação não poderá ser desfeita.</small></p>
-                                      </div>
-                                      <div class="modal-footer justify-content-center">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
-                                            <button type="submit" class="btn btn-danger">Excluir</button>
-                                        </form>
-                                      </div>
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content shadow-lg">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title" id="modalExcluirLabel{{ animal.id }}">Confirmar Exclusão</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <p>Você tem certeza que deseja excluir o anúncio do animal <strong>{{ animal.nome }}</strong>? 🐾</p>
+                                                <p class="text-muted mb-0"><small>Essa ação não poderá ser desfeita.</small></p>
+                                            </div>
+                                            <div class="modal-footer justify-content-center">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <form method="POST" action="{{ url_for('excluir_animal', id=animal.id) }}" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger">Excluir</button>
+                                                </form>
+                                            </div>
+                                        </div>
                                     </div>
-                                  </div>
                                 </div>
-
-                            {% else %}
-                                <a href="{{ url_for('perfil_doador', usuario_id=animal.usuario.id) }}" class="btn btn-sm btn-outline-primary" title="Ver perfil do doador">
-                                    <i class="fas fa-user"></i>
-                                </a>
                             {% endif %}
                         </div>
                     </div>
@@ -243,7 +280,7 @@
         <img src="{{ url_for('static', filename='img/final.png') }}"
              class="card-img rounded border border-3"
              alt="Amigo de 4 patas"
-             style="height: 390 px; object-fit: cover; width: 100%; border-color: #dee2e6; opacity: 0.92;">
+             style="height: 450px; object-fit: cover; width: 100%; border-color: #dee2e6; opacity: 0.92;">
 
         <div class="position-absolute top-50 start-50 translate-middle text-center px-3">
             <p class="h4 fw-bold text-white"
@@ -258,7 +295,6 @@
 
 {% block scripts %}
 <style>
-
 /* Estilo moderno para Select2 */
 .select2-container--default .select2-selection--single {
     height: 45px;
@@ -294,20 +330,20 @@
 </style>
 
 <script>
-    const racas_cachorro = [
-        "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle",
-        "Labrador Retriever", "Shih Tzu", "Pinscher", "Yorkshire Terrier",
-        "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Bulldog Inglês",
-        "Beagle", "Boxer", "Chow Chow", "Dobermann", "Spitz Alemão (Lulu da Pomerânia)",
-        "Border Collie", "Rottweiler", "Basset Hound", "Cocker Spaniel",
-        "Maltês", "Dachshund (Salsicha)", "Pug", "Outros"
-    ];
+const racas_cachorro = [
+    "SRD Porte Pequeno", "SRD Porte Médio", "SRD Porte Grande", "Poodle",
+    "Labrador Retriever", "Shih Tzu", "Pinscher", "Yorkshire Terrier",
+    "Pastor Alemão", "Golden Retriever", "Bulldog Francês", "Bulldog Inglês",
+    "Beagle", "Boxer", "Chow Chow", "Dobermann", "Spitz Alemão (Lulu da Pomerânia)",
+    "Border Collie", "Rottweiler", "Basset Hound", "Cocker Spaniel",
+    "Maltês", "Dachshund (Salsicha)", "Pug", "Outros"
+];
 
-    const racas_gato = [
-        "SRD", "Persa", "Siamês", "Maine Coon", "Angorá Turco", "Ragdoll",
-        "Sphynx", "Bengal", "British Shorthair", "American Shorthair",
-        "Abissínio", "Outros"
-    ];
+const racas_gato = [
+    "SRD", "Persa", "Siamês", "Maine Coon", "Angorá Turco", "Ragdoll",
+    "Sphynx", "Bengal", "British Shorthair", "American Shorthair",
+    "Abissínio", "Outros"
+];
 
 const cidadesPorEstado = {{ cidades_por_estado | tojson }};
 const filtroCidade = "{{ request.args.get('cidade','') }}";
@@ -343,15 +379,18 @@ function atualizarCidades() {
 }
 
 $(document).ready(function() {
+    // Inicializa todos os selects Select2 com idioma em português
     $('.select2').select2({
         placeholder: "Selecione",
         allowClear: true,
-        language: { noResults: () => "Nenhum resultado encontrado" }
+        language: {
+            noResults: function() {
+                return "Nenhum resultado encontrado";
+            }
+        }
     });
 
-    $('#raca').select2({ placeholder: "Selecione", allowClear: true });
-    $('#cidade').select2({ placeholder: "Selecione", allowClear: true });
-
+    // Não sobrescreva os selects individuais sem passar a configuração do idioma
     $('#especie').on('change', atualizarRacas);
     $('#estado').on('change', atualizarCidades);
 
