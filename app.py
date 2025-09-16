@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import re
-from PIL import Image, UnidentifiedImageError
+from PIL import Image, UnidentifiedImageError, ExifTags
 from datetime import datetime, timedelta
 import pytz
 import os, json
@@ -25,7 +25,7 @@ EXTENSOES_PIL = {
 app = Flask(__name__)
 app.secret_key = 'u8Jk2f9Pq4vXz7MnB1yR3sT5aL0wQeU6'
 # Limite máximo de upload: 2 MB (ajuste conforme desejar)
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 2MB
 
 # Criar um serializer com uma chave secreta do Flask
 s = URLSafeTimedSerializer(app.secret_key)
@@ -97,6 +97,23 @@ class Animal(db.Model):
     ativo = db.Column(db.Boolean, default=True)
     data_validade = db.Column(db.DateTime, default=lambda: agora_sp() + timedelta(days=30))
 
+def corrigir_orientacao(imagem):
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation]=='Orientation':
+                break
+        exif=dict(imagem._getexif().items())
+
+        if exif[orientation] == 3:
+            imagem = imagem.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            imagem = imagem.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            imagem = imagem.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError, TypeError):
+        # imagens sem EXIF ou sem orientação
+        pass
+    return imagem
 
 # Funções utilitárias
 def inativar_animais_vencidos():
@@ -239,7 +256,7 @@ def esqueci_senha():
         <p>Olá!</p>
 
         <p>Recebemos sua solicitação para redefinir a senha no sistema <strong>Adote Já 🐾</strong>.</p>
-        <p>Para criar uma nova senha, clique no botão abaixo (o link é válido por <strong>1 hora</strong>):</p>
+        <p>Para criar uma nova senha, clique no botão abaixo (o link é válido por <strong>10 minutos</strong>):</p>
 
         <div style="margin: 20px 0;">
             <a href="{link}" 
@@ -265,7 +282,7 @@ def esqueci_senha():
 @app.route('/redefinir_senha/<token>', methods=['GET', 'POST'])
 def redefinir_senha(token):
     try:
-        email = s.loads(token, salt='recuperar-senha', max_age=3600)
+        email = s.loads(token, salt='recuperar-senha', max_age=600)
     except Exception:
         flash("O link é inválido ou expirou.", "danger")
         return redirect(url_for('login'))
@@ -336,6 +353,13 @@ def home():
         return render_template('home.html')
     return redirect(url_for('login'))
 
+# Decorador para evitar cache após logout
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/perfil')
 def perfil():
@@ -351,6 +375,8 @@ def editar_perfil():
         return redirect(url_for('login'))
 
     usuario = Usuario.query.get(session['usuario_id'])
+
+    EXTENSOES_PERMITIDAS = {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'jfif'}
 
     # ====== Carregar ESTADOS ======
     estados_path = os.path.join(DATA_DIR, 'estados.json')
@@ -400,9 +426,24 @@ def editar_perfil():
         foto = request.files.get('foto')
         if foto and foto.filename:
             nome_foto = secure_filename(foto.filename)
-            caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
-            foto.save(caminho_foto)
-            usuario.foto = nome_foto
+            extensao = nome_foto.rsplit('.', 1)[-1].lower()
+
+            if extensao not in EXTENSOES_PERMITIDAS:
+                flash('Formato de arquivo não suportado. Envie apenas imagens.', 'danger')
+                return redirect(url_for('editar_perfil'))
+
+            # Tenta abrir a imagem para garantir que é válida
+            try:
+                imagem = Image.open(foto)
+                if imagem.mode in ("RGBA", "P"):
+                    imagem = imagem.convert("RGB")
+                imagem = imagem.resize((400, 400), Image.Resampling.LANCZOS)
+                caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
+                imagem.save(caminho_foto)
+                usuario.foto = nome_foto
+            except UnidentifiedImageError:
+                flash('Arquivo inválido. Envie apenas imagens.', 'danger')
+                return redirect(url_for('editar_perfil'))
 
         # Alterar senha (opcional)
         senha_atual = request.form.get('senha_atual')
@@ -420,9 +461,22 @@ def editar_perfil():
             if senha_atual and not check_password_hash(usuario.senha, senha_atual):
                 erros['senha_atual'] = "Senha atual incorreta."
 
+            # Verifica se a senha atual está correta
+            if senha_atual and not check_password_hash(usuario.senha, senha_atual):
+                flash('Senha atual incorreta!', 'danger')
+                return redirect(url_for('editar_perfil'))
+
             if nova_senha and confirmar_senha and nova_senha != confirmar_senha:
                 erros['nova_senha'] = "Nova senha e confirmação não coincidem."
                 erros['confirmar_senha'] = "Nova senha e confirmação não coincidem."
+
+            # Verifica se a nova senha e confirmação batem
+            if nova_senha or confirmar_senha:  # Se algum dos campos foi preenchido
+                if nova_senha != confirmar_senha:
+                    flash('Nova senha e confirmação não coincidem!', 'danger')
+                    return redirect(url_for('editar_perfil'))
+                else:
+                    usuario.senha = generate_password_hash(nova_senha)
 
             if not erros and nova_senha:
                 usuario.senha = generate_password_hash(nova_senha)
@@ -465,6 +519,36 @@ def cadastrar_ou_editar_animal(id=None):
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
 
+    # ------------------------------
+    # Carregar estados e cidades
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(BASE_DIR, 'data')  # <-- pasta correta
+
+    # Estados
+    estados_path = os.path.join(DATA_DIR, 'estados.json')
+    with open(estados_path, 'r', encoding='utf-8') as f:
+        estados = json.load(f)['estados']
+
+    # Cidades por estado
+    cidades_dir = os.path.join(DATA_DIR, 'cidades')
+    cidades_por_estado = {}
+    if os.path.isdir(cidades_dir):
+        for arquivo in os.listdir(cidades_dir):
+            if arquivo.endswith('.json'):
+                caminho = os.path.join(cidades_dir, arquivo)
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for item in data.get('cidades', []):
+                        uf = item.get('id')
+                        nome = item.get('cidade')
+                        if uf and nome:
+                            cidades_por_estado.setdefault(uf, []).append(nome)
+
+    for uf in cidades_por_estado:
+        cidades_por_estado[uf].sort(key=lambda s: s.lower())
+    estados.sort(key=lambda e: e['estado'].lower())
+    # ------------------------------
+
     animal = None
     if id:
         animal = Animal.query.get_or_404(id)
@@ -479,6 +563,8 @@ def cadastrar_ou_editar_animal(id=None):
         sexo = request.form.get('sexo')
         vacinado = int(request.form.get("vacinado")) if request.form.get("vacinado") else 2
         castrado = int(request.form.get("castrado")) if request.form.get("castrado") else 2
+        estado = request.form['estado']
+        cidade = request.form['cidade']
         foto_file = request.files.get('foto')
 
         if animal is None:
@@ -491,11 +577,8 @@ def cadastrar_ou_editar_animal(id=None):
         animal.sexo = sexo
         animal.vacinado = vacinado
         animal.castrado = castrado
-
-        usuario = Usuario.query.get(session["usuario_id"])
-        if usuario:
-            animal.estado = usuario.estado
-            animal.cidade = usuario.cidade
+        animal.estado = estado
+        animal.cidade = cidade
 
         # Upload e processamento da foto
         if foto_file and foto_file.filename != '':
@@ -524,7 +607,12 @@ def cadastrar_ou_editar_animal(id=None):
         flash('Animal salvo com sucesso!', 'success')
         return redirect(url_for('meus_anuncios'))
 
-    return render_template('cadastrar_editar_animal.html', animal=animal)
+    return render_template(
+        'cadastrar_editar_animal.html',
+        animal=animal,
+        estados=estados,
+        cidades_por_estado=cidades_por_estado
+    )
 
 
 # LISTAR ANIMAIS
@@ -543,6 +631,7 @@ def listar_animais():
 
     query = Animal.query.join(Usuario)
 
+    # Filtros
     if especie and especie.strip():
         query = query.filter(Animal.especie == especie)
     if raca and raca.strip():
@@ -553,17 +642,17 @@ def listar_animais():
         query = query.filter(Animal.vacinado == 0)  # 0 = Sim
     if castrados:
         query = query.filter(Animal.castrado == 0)  # 0 = Sim
-    if estado and estado != "Indiferente":
-        query = query.filter(Usuario.estado == estado)
-    if cidade and cidade != "Indiferente":
-        query = query.filter(Usuario.cidade == cidade)
+    if estado and estado.strip() != "":
+        query = query.filter(Animal.estado == estado)
+    if cidade and cidade.strip() != "":
+        query = query.filter(Animal.cidade == cidade)
 
     animais = query.filter(Animal.ativo == True).order_by(Animal.criado_em.desc()).all()
 
-    cidades_query = db.session.query(Usuario.estado, Usuario.cidade) \
-        .join(Animal) \
+    # Obter apenas estados e cidades que possuem animais ativos
+    cidades_query = db.session.query(Animal.estado, Animal.cidade) \
         .filter(Animal.ativo == True) \
-        .group_by(Usuario.estado, Usuario.cidade) \
+        .group_by(Animal.estado, Animal.cidade) \
         .all()
 
     cidades_por_estado = {}
@@ -574,12 +663,15 @@ def listar_animais():
     for uf in cidades_por_estado:
         cidades_por_estado[uf].sort(key=lambda s: s.lower())
 
-    estados_lista = []
-    for e in json.load(open(os.path.join(DATA_DIR, 'estados.json'), encoding='utf-8'))['estados']:
-        if e['id'] in cidades_por_estado:
-            estados_lista.append(e)
-    estados_lista.sort(key=lambda e: e['estado'].lower())
+        # Carregar todos os estados, mas só incluir os que têm animais
+        estados_lista = []
+        with open(os.path.join(DATA_DIR, 'estados.json'), encoding='utf-8') as f:
+            for e in json.load(f)['estados']:
+                if e['id'] in cidades_por_estado:
+                    estados_lista.append(e)
+        estados_lista.sort(key=lambda e: e['estado'].lower())
 
+    # Atualizar dias para exclusão e inativar animais expirados
     houve_alteracao = False
     agora = agora_sp()
     for animal in animais:

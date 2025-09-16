@@ -402,7 +402,7 @@ function atualizarCidades() {
     if (estado && cidadesPorEstado[estado]) {
         cidadesPorEstado[estado].forEach(c => {
             const option = $('<option>').val(c).text(c);
-            if (c === filtroCidade) option.prop('selected', true);
+            if (c === "{{ request.args.get('cidade','') }}") option.prop('selected', true);
             $cidade.append(option);
         });
     }

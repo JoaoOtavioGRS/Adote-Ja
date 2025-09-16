@@ -33,15 +33,40 @@
                 <input type="password" class="form-control" id="senha_atual" name="senha_atual">
             </div>
             <div class="mb-3">
-                <label for="nova_senha" class="form-label">Nova Senha:</label>
-                <input type="password" class="form-control" id="nova_senha" name="nova_senha">
+                <label class="form-label">Nova Senha:</label>
+                <input type="password" id="nova_senha" name="nova_senha" class="form-control">
             </div>
+
             <div class="mb-3">
-                <label for="confirmar_senha" class="form-label">Confirmar Nova Senha:</label>
-                <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha">
+                <label class="form-label">Confirmar Nova Senha:</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control">
+                <small id="msg-senha" class="text-danger"></small>
             </div>
         </div>
+<script>
+    const novaSenha = document.getElementById("nova_senha");
+    const confirmarSenha = document.getElementById("confirmar_senha");
+    const msg = document.getElementById("msg-senha");
 
+    function validarSenha() {
+        if (confirmarSenha.value && novaSenha.value !== confirmarSenha.value) {
+            msg.textContent = "As senhas não coincidem.";
+            confirmarSenha.classList.add("is-invalid");
+            confirmarSenha.classList.remove("is-valid");
+        } else if (confirmarSenha.value && novaSenha.value === confirmarSenha.value) {
+            msg.textContent = "";
+            confirmarSenha.classList.remove("is-invalid");
+            confirmarSenha.classList.add("is-valid");
+        } else {
+            msg.textContent = "";
+            confirmarSenha.classList.remove("is-invalid");
+            confirmarSenha.classList.remove("is-valid");
+        }
+    }
+
+    novaSenha.addEventListener("input", validarSenha);
+    confirmarSenha.addEventListener("input", validarSenha);
+</script>
         <!-- Telefone -->
         <div class="mb-3">
             <label for="telefone" class="form-label">Telefone</label>
@@ -85,30 +110,34 @@
             </select>
         </div>
 
-        <!-- Foto -->
-        <div class="mb-3">
-            <label for="foto" class="form-label">Foto de Perfil:</label>
-            <input type="file" class="form-control" id="foto" name="foto">
-        </div>
+<form id="formEditarPerfil" method="POST" enctype="multipart/form-data">
+    <div class="position-relative d-inline-block mb-3">
+        <!-- Foto atual do usuário -->
+        <img id="foto_perfil" src="{{ url_for('static', filename='fotos_perfil/' + (usuario.foto if usuario.foto else 'usuario_padrao.png')) }}"
+             alt="Foto de perfil"
+             class="rounded-circle"
+             style="width: 150px; height: 150px; object-fit: cover; cursor: pointer; transition: 0.3s;">
 
-        <!-- Exibe foto atual ou ícone -->
-        <div class="text-left mt-3 mb-3">
-            {% if usuario.foto and usuario.foto != 'None' and usuario.foto != '' %}
-                <img src="{{ url_for('static', filename='fotos_perfil/' ~ usuario.foto) }}"
-                     class="rounded-circle shadow"
-                     style="width: 200px; height: 200px; object-fit: cover;"
-                     alt="Foto de Perfil">
-            {% else %}
-                <div class="d-flex justify-content-center align-items-center bg-light text-secondary rounded-circle shadow"
-                     style="width: 200px; height: 200px;">
-                    <i class="fa-solid fa-user fa-3x"></i>
-                </div>
-            {% endif %}
-        </div>
 
-        <!-- Botões -->
-        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+    <!-- Ícone de edição -->
+    <div id="editar_foto"
+         class="position-absolute top-50 start-50 translate-middle d-flex align-items-center justify-content-center rounded-circle"
+         style="width: 50px; height: 50px; background-color: rgba(0,0,0,0.5); cursor: pointer;">
+        <i class="bi bi-pencil-fill fs-4 text-white"></i>
+    </div>
+
+    <!-- Input escondido -->
+    <input type="file" id="input_foto" name="foto" accept="image/*" style="display: none;">
+</div>
+
+    <!-- Outros campos do formulário (nome, email, telefone etc) -->
+
+    <!-- Botões -->
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary me-2">Salvar Alterações</button>
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>
     </form>
 </div>
 
@@ -162,6 +191,22 @@
 
 <!-- Script para telefone/checkbox -->
 <script>
+
+document.getElementById('formEditarPerfil').addEventListener('submit', function(event) {
+    const novaSenha = document.getElementById('nova_senha').value;
+    const confirmarSenha = document.getElementById('confirmar_senha').value;
+
+    // Remove classes de erro anteriores
+    document.getElementById('nova_senha').classList.remove('is-invalid');
+    document.getElementById('confirmar_senha').classList.remove('is-invalid');
+
+    if (novaSenha !== confirmarSenha) {
+        event.preventDefault(); // Impede envio do formulário
+        document.getElementById('nova_senha').classList.add('is-invalid');
+        document.getElementById('confirmar_senha').classList.add('is-invalid');
+    }
+});
+
     document.addEventListener("DOMContentLoaded", function () {
         const telefoneInput = document.getElementById("telefone");
         const concordoContainer = document.getElementById("concordo-container");
@@ -179,5 +224,48 @@
         toggleConcordo();
         telefoneInput.addEventListener("input", toggleConcordo);
     });
+
 </script>
+
+<script>
+// Clique no lápis abre input de arquivo
+document.getElementById('editar_foto').addEventListener('click', function() {
+    document.getElementById('input_foto').click();
+});
+
+// Preview da foto selecionada
+document.getElementById('input_foto').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('foto_perfil').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+
+<style>
+/* Foto fica opaca ao passar o mouse */
+.position-relative:hover img#foto_perfil {
+    opacity: 0.6;
+}
+
+/* Lápis inicialmente invisível e acima da imagem */
+#editar_foto {
+    opacity: 0;
+    z-index: 2;
+}
+
+/* Mostra o lápis ao passar o mouse sobre a div */
+.position-relative:hover #editar_foto {
+    opacity: 1;
+}
+
+/* Lápis hover */
+#editar_foto:hover {
+    background-color: rgba(0,0,0,0.7);
+}
+</style>
 {% endblock %}

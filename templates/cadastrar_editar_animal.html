@@ -58,22 +58,51 @@
         </div>
 
         <!-- Vacinado -->
-        <div class="col-md-6">
+          <div class="col-md-6">
             <label for="vacinado" class="form-label">Vacinado:</label>
             <select class="form-select select2" name="vacinado" required>
-                <option value="2" {% if (animal and animal.vacinado == 2) or not animal %}selected{% endif %}>Não sei</option>
+                <option value="" {% if not animal %}selected{% endif %} disabled>Selecione</option>
                 <option value="0" {% if animal and animal.vacinado == 0 %}selected{% endif %}>Sim</option>
                 <option value="1" {% if animal and animal.vacinado == 1 %}selected{% endif %}>Não</option>
+                <option value="2" {% if animal and animal.vacinado == 2 %}selected{% endif %}>Não sei</option>
             </select>
         </div>
 
+
         <!-- Castrado -->
-        <div class="col-md-6">
+       <div class="col-md-6">
             <label for="castrado" class="form-label">Castrado:</label>
             <select class="form-select select2" name="castrado" required>
-                <option value="2" {% if (animal and animal.castrado == 2) or not animal %}selected{% endif %}>Selecione</option>
+                <option value="" {% if not animal %}selected{% endif %} disabled>Selecione</option>
                 <option value="0" {% if animal and animal.castrado == 0 %}selected{% endif %}>Sim</option>
                 <option value="1" {% if animal and animal.castrado == 1 %}selected{% endif %}>Não</option>
+                <option value="2" {% if animal and animal.castrado == 2 %}selected{% endif %}>Não sei</option>
+            </select>
+        </div>
+
+        <!-- Estado do Animal -->
+        <div class="col-md-6">
+            <label for="estado" class="form-label">Estado:</label>
+            <select class="form-select" id="estado" name="estado" required>
+                <option value="">Selecione um estado</option>
+                {% for estado in estados %}
+                    <option value="{{ estado.id }}" {% if animal and animal.estado == estado.id %}selected{% endif %}>
+                        {{ estado.estado }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Cidade do Animal -->
+        <div class="col-md-6">
+            <label for="cidade" class="form-label">Cidade:</label>
+            <select class="form-select" id="cidade" name="cidade" required>
+                <option value="">Selecione uma cidade</option>
+                {% if animal and animal.estado %}
+                    {% for c in cidades_por_estado[animal.estado] %}
+                        <option value="{{ c }}" {% if animal.cidade == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                {% endif %}
             </select>
         </div>
 
@@ -203,5 +232,24 @@ $(document).ready(function() {
             });
         }
     });
+
+
+const cidadesPorEstado = {{ cidades_por_estado | tojson }};
+    const estadoSelect = document.getElementById('estado');
+    const cidadeSelect = document.getElementById('cidade');
+
+    estadoSelect.addEventListener('change', function() {
+        const uf = this.value;
+        cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+        if (uf && cidadesPorEstado[uf]) {
+            cidadesPorEstado[uf].forEach(function(cidade) {
+                const option = document.createElement('option');
+                option.value = cidade;
+                option.text = cidade;
+                cidadeSelect.appendChild(option);
+            });
+        }
+    });
+
 </script>
 {% endblock %}
