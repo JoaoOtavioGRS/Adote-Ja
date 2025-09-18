@@ -1,55 +1,69 @@
-# 🐾 Adote Já
+# Adote-Já 🐾
 
-O **Adote Já** é uma aplicação web desenvolvida para facilitar a adoção responsável de animais, conectando pessoas que desejam adotar com tutores ou abrigos que têm pets disponíveis.  
-O sistema oferece filtros de busca, gerenciamento de cadastros, upload de fotos de animais e integração com WhatsApp para contato rápido.
-
----
-
-## 📸 Funcionalidades
-
-- **Listagem de Animais** com fotos e informações detalhadas.
-- **Filtros Avançados** para busca por:
-  - Espécie
-  - Raça (listas dinâmicas para cães e gatos)
-  - Sexo
-  - Status de vacinação
-  - Status de castração
-  - Estado e cidade (apenas locais com animais cadastrados)
-- **Cadastro, Edição e Exclusão de Animais** pelo usuário que anunciou.
-- **Controle de Anúncios**:
-  - Anúncios ativos e inativos
-  - Alertas de expiração próximos
-  - Possibilidade de reativar anúncios inativos
-- **Integração com WhatsApp** para contato direto com o anunciante.
-- **Uploads de Fotos de Animais** com placeholders para fotos não cadastradas.
-- **Cadastro e Edição de Perfil do Usuário**, incluindo foto e telefone.
-- **Interface Responsiva e Amigável**, utilizando Bootstrap 5 e Select2 para filtros e formulários.
+Adote-Já é um **marketplace para adoção e doação de cães e gatos**, desenvolvido com **Flask** e **MySQL**, com o objetivo de ajudar a reduzir o número de animais de rua e facilitar o processo para quem resgata ou deseja adotar. O sistema é responsivo, podendo ser acessado via navegador em **computador, tablet ou celular**.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
-- **Backend:** Flask (Python)
-- **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5.3.3, Select2
-- **Banco de Dados:** MySQL (via SQLAlchemy)
-- **Uploads de Arquivos:** PIL (Pillow) para validação e manipulação de imagens
-- **Autenticação:** Sessão de usuário com login/senha
-- **Integrações:** WhatsApp (link direto via `wa.me`)
-- **Controle de Versão:** Git + GitHub
+- **Backend:** Python 3, Flask, Flask-SQLAlchemy, Flask-Mail  
+- **Banco de Dados:** MySQL (com PyMySQL)  
+- **Front-end:** HTML, Bootstrap 5.3.3, Select2, JS/jQuery  
+- **Manipulação de Imagens:** Pillow  
+- **Segurança e Sessões:** Werkzeug, itsdangerous  
+- **Fuso Horário e Datas:** pytz  
+
+---
+
+## Funcionalidades
+
+- **Usuário**
+  - Cadastro e login/logout com sessão  
+  - Recuperação de senha via email  
+  - Edição de perfil com foto de usuário  
+
+- **Animais**
+  - Cadastro de animais com fotos  
+  - Edição e exclusão de animais  
+  - Listagem de animais com filtros dinâmicos:
+    - Espécie (Cachorro/Gato)  
+    - Raça (com listas pré-definidas e opção "Outros")  
+    - Sexo, vacinado, castrado  
+  - Detalhes do animal com botão para copiar telefone  
+
+- **Interface**
+  - Templates responsivos com Bootstrap  
+  - Uso de Select2 para filtros e campos de formulário  
+  - Rodapé consistente em todas as páginas  
+  - Mensagens de boas-vindas personalizadas  
 
 ---
 
 ## 📂 Estrutura de Pastas (Resumo)
 
-├── app.py # Arquivo principal da aplicação
-├── templates/ # Páginas HTML (Jinja2)
-├── static/ # CSS, JS, imagens e uploads
-│ ├── uploads/img_animais/
+adote-ja/
+│
+├── app.py # Aplicação principal Flask
+├── requirements.txt # Dependências Python
+├── templates/ # Templates HTML
+│ ├── base.html
+│ ├── home.html
+│ ├── login.html
+│ ├── cadastrar_usuario.html
+│ ├── cadastrar_animal.html
+│ ├── listar_animais.html
+│ ├── editar_animal.html
+│ └── ...
+├── static/ # Arquivos estáticos (CSS, JS, imagens)
+│ ├── css/
+│ ├── js/
 │ └── fotos_perfil/
-├── requirements.txt # Dependências
-└── README.md # Documentação
+├── uploads/ # Fotos dos animais
+└── README.md
 
 ---
+
+## Instalação
 
 ## 🖥️ Configuração do Banco de Dados MySQL
 
@@ -178,3 +192,4 @@ A todos que incentivam a adoção responsável
 Comunidade open source
 
 Tutores que compartilham seus animais para adoção
+
