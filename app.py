@@ -41,7 +41,7 @@ DATA_DIR = os.path.abspath(os.path.join(app.root_path, 'data'))
 CIDADES_DIR = os.path.join(DATA_DIR, 'cidades')
 
 # Configurações do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/adote_ja'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://TaLpIdAe:FodasseaMP13#@localhost/adote_ja'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Pastas para uploads
