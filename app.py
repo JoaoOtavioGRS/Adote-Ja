@@ -54,9 +54,9 @@ os.makedirs(app.config['UPLOAD_FOLDER_ANIMAL'], exist_ok=True)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'adotejapet@gmail.com'
-app.config['MAIL_PASSWORD'] = 'juvmlfxotammqzao'
-app.config['MAIL_DEFAULT_SENDER'] = ('Adote-Já', 'adotejapet@gmail.com')
+app.config['MAIL_USERNAME'] = 'equipeadotehoje@gmail.com'
+app.config['MAIL_PASSWORD'] = 'pgzryxqrmrysxyhj'
+app.config['MAIL_DEFAULT_SENDER'] = ('Adote-Hoje', 'equipeadotehoje@gmail.com')
 
 mail = Mail(app)
 
