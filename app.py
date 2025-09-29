@@ -248,14 +248,14 @@ def esqueci_senha():
         link = url_for('redefinir_senha', token=token, _external=True)
 
         msg = Message(
-            subject="🔑 Redefinição de Senha - Adote Já",
+            subject="🔑 Redefinição de Senha - Adote Hoje",
             recipients=[email]
         )
 
         msg.html = f"""
         <p>Olá!</p>
 
-        <p>Recebemos sua solicitação para redefinir a senha no sistema <strong>Adote Já 🐾</strong>.</p>
+        <p>Recebemos sua solicitação para redefinir a senha no sistema <strong>Adote Hoje 🐾</strong>.</p>
         <p>Para criar uma nova senha, clique no botão abaixo (o link é válido por <strong>10 minutos</strong>):</p>
 
         <div style="margin: 20px 0;">
@@ -270,7 +270,7 @@ def esqueci_senha():
         <p>Se você não solicitou, basta ignorar este e-mail com segurança.</p>
 
         <p>Atenciosamente,<br>
-        Equipe <strong>Adote Já</strong></p>
+        Equipe <strong>Adote Hoje</strong></p>
         """
         mail.send(msg)
 

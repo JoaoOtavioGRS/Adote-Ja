@@ -74,15 +74,14 @@
                    value="{{ usuario.telefone if usuario.telefone else '' }}"
                    placeholder="{{ '(opcional)' if not usuario.telefone else '' }}">
 
-            <!-- Caixa de concordância (aparece se tiver telefone preenchido) -->
-            <div id="concordo-container" class="form-check mt-2" style="display: none;">
-                <input class="form-check-input" type="checkbox" id="concordo_telefone" name="concordo_telefone"
-                       {% if usuario.telefone %}checked{% endif %}>
-                <label class="form-check-label" for="concordo_telefone">
-                    Concordo que o número de telefone será público
-                </label>
-            </div>
-        </div>
+<!-- Caixa de concordância (aparece se tiver telefone preenchido) -->
+<div id="concordo-container" class="form-check mt-2" style="display: none;">
+    <input class="form-check-input" type="checkbox" id="concordo_telefone" name="concordo_telefone"
+           {% if usuario.telefone %}checked{% endif %}>
+    <label class="form-check-label" for="concordo_telefone">
+        Concordo que o número de telefone será público
+    </label>
+</div>
 
         <!-- Estado -->
         <div class="mb-3">
@@ -110,7 +109,7 @@
             </select>
         </div>
 
-<form id="formEditarPerfil" method="POST" enctype="multipart/form-data">
+
     <div class="position-relative d-inline-block mb-3">
         <!-- Foto atual do usuário -->
         <img id="foto_perfil" src="{{ url_for('static', filename='fotos_perfil/' + (usuario.foto if usuario.foto else 'usuario_padrao.png')) }}"
@@ -137,9 +136,14 @@
         <button type="submit" class="btn btn-primary me-2">Salvar Alterações</button>
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancelar</a>
     </div>
-</form>
-    </form>
-</div>
+        </div>
+        </div>
+
+   </form>
+
+
+
+
 
 <!-- Script para popular cidades dinamicamente ao trocar o estado -->
 <script>
@@ -191,41 +195,33 @@
 
 <!-- Script para telefone/checkbox -->
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const telefoneInput = document.getElementById("telefone");
+    const concordoContainer = document.getElementById("concordo-container");
+    const concordoCheckbox = document.getElementById("concordo_telefone");
+    const btnSalvar = document.querySelector("button[type='submit']"); // botão salvar alterações
 
-document.getElementById('formEditarPerfil').addEventListener('submit', function(event) {
-    const novaSenha = document.getElementById('nova_senha').value;
-    const confirmarSenha = document.getElementById('confirmar_senha').value;
-
-    // Remove classes de erro anteriores
-    document.getElementById('nova_senha').classList.remove('is-invalid');
-    document.getElementById('confirmar_senha').classList.remove('is-invalid');
-
-    if (novaSenha !== confirmarSenha) {
-        event.preventDefault(); // Impede envio do formulário
-        document.getElementById('nova_senha').classList.add('is-invalid');
-        document.getElementById('confirmar_senha').classList.add('is-invalid');
-    }
-});
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const telefoneInput = document.getElementById("telefone");
-        const concordoContainer = document.getElementById("concordo-container");
-        const concordoCheckbox = document.getElementById("concordo_telefone");
-
-        function toggleConcordo() {
-            if (telefoneInput.value.trim() !== "") {
-                concordoContainer.style.display = "block";
-            } else {
-                concordoContainer.style.display = "none";
-                concordoCheckbox.checked = false;
-            }
+    function atualizarVisibilidade() {
+        if (telefoneInput.value.trim() !== "") {
+            // Mostra a caixinha
+            concordoContainer.style.display = "block";
+            // Se não está marcado, desabilita salvar
+            btnSalvar.disabled = !concordoCheckbox.checked;
+        } else {
+            // Se não tem telefone, esconde a caixinha e libera salvar
+            concordoContainer.style.display = "none";
+            concordoCheckbox.checked = false;
+            btnSalvar.disabled = false;
         }
+    }
 
-        toggleConcordo();
-        telefoneInput.addEventListener("input", toggleConcordo);
-    });
+    telefoneInput.addEventListener("input", atualizarVisibilidade);
+    concordoCheckbox.addEventListener("change", atualizarVisibilidade);
 
+    atualizarVisibilidade(); // inicializa
+});
 </script>
+
 
 <script>
 // Clique no lápis abre input de arquivo
@@ -268,4 +264,5 @@ document.getElementById('input_foto').addEventListener('change', function(event)
     background-color: rgba(0,0,0,0.7);
 }
 </style>
+
 {% endblock %}
