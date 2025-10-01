@@ -78,7 +78,7 @@ class Usuario(db.Model):
     animais = db.relationship('Animal', backref='usuario', lazy=True)
     estado = db.Column(db.String(2))
     cidade = db.Column(db.String(100))
-
+    email_confirmado = db.Column(db.Boolean, default=False)
 
 class Animal(db.Model):
     __tablename__ = 'animais'
@@ -166,8 +166,6 @@ def cadastrar():
         estado = request.form.get('estado')
         cidade = request.form.get('cidade')
 
-        concordo_telefone = request.form.get('concordo')  # "1" se marcado, None se não
-
         if senha != confirmar_senha:
             flash('As senhas não coincidem.', 'danger')
             return redirect(url_for('cadastrar'))
@@ -190,6 +188,7 @@ def cadastrar():
             caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_USUARIO'], nome_foto)
             foto.save(caminho_foto)
 
+        # Cria o usuário, mas sem confirmar e-mail
         usuario = Usuario(
             nome=nome,
             email=email,
@@ -197,14 +196,35 @@ def cadastrar():
             senha=senha_criptografada,
             estado=estado,
             cidade=cidade,
-            foto=nome_foto
+            foto=nome_foto,
+            email_confirmado=False
         )
         db.session.add(usuario)
         db.session.commit()
-        flash('Usuário cadastrado com sucesso!', 'success')
+
+        # Gera token de confirmação
+        token = s.dumps(email, salt='confirmar-email')
+        link = url_for('confirmar_email', token=token, _external=True)
+
+        # Envia o e-mail
+        msg = Message(
+            subject="Confirme seu e-mail - Adote Hoje 🐾",
+            recipients=[email]
+        )
+        msg.html = f"""
+        <p>Olá {nome},</p>
+        <p>Bem-vindo ao <strong>Adote Hoje</strong>! 🐾</p>
+        <p>Para ativar sua conta, clique no link abaixo (válido por 30 minutos):</p>
+        <a href="{link}" style="background:#198754;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">
+            ✅ Confirmar e-mail
+        </a>
+        """
+        mail.send(msg)
+
+        flash('📩 Cadastro realizado! Confirme seu e-mail para ativar sua conta.', 'info')
         return redirect(url_for('login'))
 
-    # GET
+    # GET continua igual
     estados_path = os.path.join(DATA_DIR, 'estados.json')
     with open(estados_path, 'r', encoding='utf-8') as f:
         estados_lista = json.load(f)['estados']
@@ -232,6 +252,29 @@ def cadastrar():
         estados=estados_lista,
         cidades_por_estado=cidades_por_estado
     )
+
+@app.route('/confirmar_email/<token>')
+def confirmar_email(token):
+    try:
+        email = s.loads(token, salt='confirmar-email', max_age=1800)  # 30 min
+    except Exception:
+        flash("❌ Link inválido ou expirado.", "danger")
+        return redirect(url_for('login'))
+
+    usuario = Usuario.query.filter_by(email=email).first()
+    if not usuario:
+        flash("Usuário não encontrado.", "danger")
+        return redirect(url_for('login'))
+
+    if usuario.email_confirmado:
+        flash("✅ Seu e-mail já foi confirmado.", "success")
+    else:
+        usuario.email_confirmado = True
+        db.session.commit()
+        flash("🎉 E-mail confirmado com sucesso! Agora você pode acessar sua conta.", "success")
+
+    return redirect(url_for('login'))
+
 
 @app.route('/esqueci_senha', methods=['GET', 'POST'])
 def esqueci_senha():
@@ -325,6 +368,11 @@ def login():
         usuario = Usuario.query.filter_by(email=email).first()
 
         if usuario and check_password_hash(usuario.senha, senha):
+            # Checa se o e-mail já foi confirmado
+            if not usuario.email_confirmado:
+                flash('⚠️ Confirme seu e-mail antes de fazer login.', 'warning')
+                return redirect(url_for('login'))
+
             # Salva dados do usuário na sessão
             session['usuario_id'] = usuario.id
             session['usuario_nome'] = usuario.nome
