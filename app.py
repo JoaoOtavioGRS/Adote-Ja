@@ -253,6 +253,9 @@ def cadastrar():
         cidades_por_estado=cidades_por_estado
     )
 
+
+
+
 @app.route('/confirmar_email/<token>')
 def confirmar_email(token):
     try:
