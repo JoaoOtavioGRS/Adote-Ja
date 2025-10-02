@@ -10,6 +10,7 @@ import os, json
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
+import boto3
 
 EXTENSOES_PIL = {
     'jpg': 'JPEG',
@@ -25,7 +26,7 @@ EXTENSOES_PIL = {
 app = Flask(__name__)
 app.secret_key = 'u8Jk2f9Pq4vXz7MnB1yR3sT5aL0wQeU6'
 # Limite máximo de upload: 2 MB (ajuste conforme desejar)
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 2MB
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB
 
 # Criar um serializer com uma chave secreta do Flask
 s = URLSafeTimedSerializer(app.secret_key)
@@ -49,6 +50,20 @@ app.config['UPLOAD_FOLDER_USUARIO'] = os.path.join('static', 'fotos_perfil')
 os.makedirs(app.config['UPLOAD_FOLDER_USUARIO'], exist_ok=True)
 app.config['UPLOAD_FOLDER_ANIMAL'] = os.path.join('static', 'uploads/img_animais/')
 os.makedirs(app.config['UPLOAD_FOLDER_ANIMAL'], exist_ok=True)
+
+# Configurar o Rekognition
+rekognition = boto3.client('rekognition', region_name='sa-east-1')
+
+def is_safe_image(file_path):
+    """Retorna True se a imagem não tiver conteúdo impróprio"""
+    with open(file_path, 'rb') as image:
+        response = rekognition.detect_moderation_labels(
+            Image={'Bytes': image.read()},
+            MinConfidence=50
+        )
+    # Se detectar qualquer label, considera impróprio
+    return len(response['ModerationLabels']) == 0
+
 
 # Configurações de e-mail (usando Gmail)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -643,8 +658,19 @@ def cadastrar_ou_editar_animal(id=None):
                 if not formato_pillow:
                     flash('Formato de imagem não suportado.', 'danger')
                     return redirect(request.url)
+
+                # Salva temporariamente
                 imagem.save(caminho, format=formato_pillow)
+
+                # 🔒 Validação do Rekognition
+                if not is_safe_image(caminho):
+                    os.remove(caminho)
+                    flash('Imagem não permitida (conteúdo impróprio detectado).', 'danger')
+                    return redirect(request.url)
+
+                # Se passou, atualiza o campo do animal
                 animal.foto = foto_filename
+
             except UnidentifiedImageError:
                 flash('Formato de imagem não suportado ou arquivo inválido.', 'danger')
                 return redirect(request.url)
