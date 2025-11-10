@@ -3,7 +3,7 @@ title: "Adote Hoje 🐾"
 draft: false
 important: 1
 language: pt-br
-featured_image: images/featured/adote-hoje-logo.jpg
+featured_image: Adote-Hoje/static/img/logoadotehoje.jpg
 summary: Plataforma web para adoção e doação de cães e gatos, conectando tutores e adotantes de forma rápida e segura.
 author: João Otávio
 categories: MarketPlace
