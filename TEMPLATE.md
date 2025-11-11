@@ -10,7 +10,7 @@ categories: MarketPlace
 tags: ["ADS", "Flask", "MySQL", "Adoção", "Tecnologia"] 
 linkweb: https://adotehoje.com.br
 linkblog: 
-linkvideo: 
+linkvideo: https://youtu.be/BvXTZ90as3k
 ---
 
 # ADOTE HOJE — CONECTANDO AMOR E ADOÇÃO 🐶🐱
