@@ -1,6 +1,6 @@
-# Adote-Já 🐾
+# Adote-Hoje 🐾
 
-Adote-Já é um **marketplace para adoção e doação de cães e gatos**, desenvolvido com **Flask** e **MySQL**, com o objetivo de ajudar a reduzir o número de animais de rua e facilitar o processo para quem resgata ou deseja adotar. O sistema é responsivo, podendo ser acessado via navegador em **computador, tablet ou celular**.
+Adote-Hoje é um **marketplace para adoção e doação de cães e gatos**, desenvolvido com **Flask** e **MySQL**, com o objetivo de ajudar a reduzir o número de animais de rua e facilitar o processo para quem resgata ou deseja adotar. O sistema é responsivo, podendo ser acessado via navegador em **computador, tablet ou celular**.
 
 ---
 
